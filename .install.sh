@@ -107,8 +107,8 @@ defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 
 # Copying and checking out configuration files
 echo "Planting Configuration Files..."
-[ ! -d "$HOME/dotfiles" ] && git clone --bare git@github.com:FelixKratz/dotfiles.git $HOME/dotfiles
-git --git-dir=$HOME/dotfiles/ --work-tree=$HOME checkout master
+[ ! -d "$HOME/code/dotfiles" ] && mkdir $HOME/code ; git clone --bare git@github.com:sbfnk/dotfiles.git $HOME/code/dotfiles
+git --git-dir=$HOME/code/dotfiles/ --work-tree=$HOME checkout main
 
 # Installing Fonts
 git clone git@github.com:shaunsingh/SFMono-Nerd-Font-Ligaturized.git /tmp/SFMono_Nerd_Font
