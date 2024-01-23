@@ -261,7 +261,7 @@ scrollback_pager ~/.config/kitty/pager.sh 'INPUT_LINE_NUMBER' 'CURSOR_LINE' 'CUR
 #: for high precision scrolling devices on platforms such as macOS and
 #: Wayland. Use negative numbers to change scroll direction.
 
-# map ctrl+h>[ launch --type overlay --stdin-source=@screen_scrollback ~/.config/kitty/pager.sh
+map ctrl+h>[ launch --type overlay --stdin-source=@screen_scrollback ~/.config/kitty/pager.sh
 
 #: }}}
 
@@ -1159,7 +1159,6 @@ macos_traditional_fullscreen yes
 #: that is assigned in the default configuration::
 
 #:     map kitty_mod+space no_op
-map kitty_mod+h no_op
 
 #: You can combine multiple actions to be triggered by a single
 #: shortcut, using the syntax below::
@@ -1512,6 +1511,7 @@ map kitty_mod+h no_op
 #:     map ctrl+alt+a send_text normal Word\x1b[H
 #:     map ctrl+alt+a send_text application Word\x1bOH
 
+map ctrl+h>] paste_from_clipboard
 
 #: }}}
 
@@ -1519,6 +1519,6 @@ map kitty_mod+h no_op
 
 
 # BEGIN_KITTY_THEME
-# Atom
+# Atom One Light
 include current-theme.conf
 # END_KITTY_THEME
