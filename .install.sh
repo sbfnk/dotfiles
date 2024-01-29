@@ -39,6 +39,7 @@ brew install sketchybar
 brew install borders
 brew install yabai
 brew install nnn
+brew install jq
 
 ## sudo
 brew install --cask git-credential-manager
@@ -54,6 +55,10 @@ brew install neovim
 ### Nice to have
 brew install btop
 brew install svim
+
+### Additional apps
+brew install dropbox
+brew install mailmate
 
 ### Emacs
 brew install emacs-plus --with-native-comp
