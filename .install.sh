@@ -16,6 +16,7 @@ brew tap homebrew/cask-fonts
 brew tap FelixKratz/formulae
 brew tap koekeishiya/formulae
 brew tap d12frosted/emacs-plus
+brew tap artginzburg/tap
 
 ## Formulae
 echo "Installing Brew Formulae..."
@@ -24,8 +25,11 @@ brew install gsl
 brew install llvm
 brew install boost
 brew install libomp
-brew install armadillo
+brew install python
+
+### Tools
 brew install wget
+brew install tmux
 brew install ripgrep
 brew install mas
 brew install gh
@@ -33,6 +37,13 @@ brew install ifstat
 brew install switchaudio-osx
 brew install sketchybar
 brew install borders
+brew install yabai
+brew install nnn
+
+## sudo
+brew install --cask git-credential-manager
+brew install sudo-touchid
+brew services start sudo-touchid
 
 ### Science
 brew install mactex
@@ -51,16 +62,25 @@ brew install emacs-plus --with-native-comp
 echo "Installing Brew Casks..."
 ### Terminals & Browsers
 brew install --cask kitty
+brew install --cask 1password
+brew install --cask arc
+
+### R
+brew install --cask r
 
 ### Office
 brew install --cask inkscape
 brew install --cask zoom
 brew install --cask skim
-brew install --cask arc
+brew install --cask busycal
+
+### Essential
+brew install --cask karabiner-elements
 
 ### Nice to have
 brew install --cask alfred
 brew install --cask spotify
+brew install --cask telegram
 
 ### Fonts
 brew install --cask sf-symbols
@@ -70,7 +90,7 @@ brew install --cask font-fira-code
 
 # Mac App Store Apps
 echo "Installing Mac App Store Apps..."
-mas install 497799835 #xCode
+mas install 360593530 #Notability
 
 # macOS Settings
 echo "Changing macOS defaults..."
@@ -131,7 +151,7 @@ rm -rf /tmp/SFMono_Nerd_Font/
 
 # Install oauth2ms
 git clone git@github.com:harishkrupo/oauth2ms.git $HOME/code/oauth2ms
-cd $HOME/code/autho2ms
+cd $HOME/code/oauth2ms
 pip install -r requirements.txt
 cp oauth2ms /usr/local/bin
 
@@ -140,12 +160,11 @@ curl -L https://github.com/kvndrsslr/sketchybar-app-font/releases/download/v1.0.
 # Start Services
 echo "Starting Services (grant permissions)..."
 yabai --start-service
+skhd --start-service
 brew services start sketchybar
 brew services start borders
 brew services start svim
 
 csrutil status
-echo "Do not forget to disable SIP and reconfigure keyboard -> $HOME/.config/keyboard..."
-open "$HOME/.config/keyboard/KeyboardModifierKeySetup.png"
 echo "Add sudoer manually:\n '$(whoami) ALL = (root) NOPASSWD: sha256:$(shasum -a 256 $(which yabai) | awk "{print \$1;}") $(which yabai) --load-sa' to '/private/etc/sudoers.d/yabai'"
 echo "Installation complete...\n"
