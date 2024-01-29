@@ -103,6 +103,10 @@ defaults write com.apple.finder ShowStatusBar -bool false
 defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool YES
 defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 
+## install doom emacs
+git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
+~/.config/emacs/bin/doom install
+
 # Copying and checking out configuration files
 echo "Planting Configuration Files..."
 mkdir $HOME/code
@@ -111,12 +115,12 @@ git clone git@github.com:sbfnk/dotfiles_private.git $HOME/code/dotfiles_private
 
 # linking dot files
 mkdir $HOME/.config
-for (dir in $(basename $HOME/code/dotfiles*)); do
-  for (file in $HOME/code/$dir/config/*); do
+for dir in $HOME/code/dotfiles*; do
+  for file in $dir/config/*; do
     ln -sf $file $HOME/.config
   done
-  for (file in $HOME/code/$dir/root/*); do
-    ln -sf $file $HOME/
+  for file in $dir/root/*; do
+    ln -sFh $file $HOME/.$(basename $file)
   done
 done
 
