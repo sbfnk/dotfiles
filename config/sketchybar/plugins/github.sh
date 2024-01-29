@@ -34,6 +34,8 @@ update() {
       repo="Note"
       title="No new notifications"
     fi 
+    echo $repo
+    echo $url
     case "${type}" in
       "'Issue'") COLOR=$GREEN; ICON=$GIT_ISSUE; URL="$(gh api "$(echo "${url}" | sed -e "s/^'//" -e "s/'$//")" | jq .html_url)"
       ;;
