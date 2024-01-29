@@ -39,8 +39,6 @@ brew install mactex
 
 ### Terminal
 brew install neovim
-brew install zsh-autosuggestions
-brew install zsh-syntax-highlighting
 
 ### Nice to have
 brew install btop
@@ -107,18 +105,33 @@ defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 
 # Copying and checking out configuration files
 echo "Planting Configuration Files..."
-[ ! -d "$HOME/code/dotfiles" ] && mkdir $HOME/code ; git clone --bare git@github.com:sbfnk/dotfiles.git $HOME/code/dotfiles
-git --git-dir=$HOME/code/dotfiles/ --work-tree=$HOME checkout main
+mkdir $HOME/code
+git clone git@github.com:sbfnk/dotfiles.git $HOME/code/dotfiles
+git clone git@github.com:sbfnk/dotfiles_private.git $HOME/code/dotfiles_private
+
+# linking dot files
+mkdir $HOME/.config
+for (dir in $(basename $HOME/code/dotfiles*)); do
+  for (file in $HOME/code/$dir/config/*); do
+    ln -sf $file $HOME/.config
+  done
+  for (file in $HOME/code/$dir/root/*); do
+    ln -sf $file $HOME/
+  done
+done
 
 # Installing Fonts
 git clone git@github.com:shaunsingh/SFMono-Nerd-Font-Ligaturized.git /tmp/SFMono_Nerd_Font
 mv /tmp/SFMono_Nerd_Font/* $HOME/Library/Fonts
 rm -rf /tmp/SFMono_Nerd_Font/
 
-curl -L https://github.com/kvndrsslr/sketchybar-app-font/releases/download/v1.0.23/sketchybar-app-font.ttf -o $HOME/Library/Fonts/sketchybar-app-font.ttf
+# Install oauth2ms
+git clone git@github.com:harishkrupo/oauth2ms.git $HOME/code/oauth2ms
+cd $HOME/code/autho2ms
+pip install -r requirements.txt
+cp oauth2ms /usr/local/bin
 
-source $HOME/.zshrc
-cfg config --local status.showUntrackedFiles no
+curl -L https://github.com/kvndrsslr/sketchybar-app-font/releases/download/v1.0.23/sketchybar-app-font.ttf -o $HOME/Library/Fonts/sketchybar-app-font.ttf
 
 # Start Services
 echo "Starting Services (grant permissions)..."
