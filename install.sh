@@ -60,6 +60,8 @@ brew install svim
 ### Additional apps
 brew install dropbox
 brew install mailmate
+brew install isync
+brew install slack
 
 ### Emacs
 brew install emacs-plus --with-native-comp
@@ -89,6 +91,7 @@ brew install --cask karabiner-elements
 brew install --cask alfred
 brew install --cask spotify
 brew install --cask telegram
+brew install --cask whatsapp
 
 ### Fonts
 brew install --cask sf-symbols
