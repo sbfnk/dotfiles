@@ -17,6 +17,7 @@ brew tap FelixKratz/formulae
 brew tap koekeishiya/formulae
 brew tap d12frosted/emacs-plus
 brew tap artginzburg/tap
+brew tap sbfnk/formulae
 
 ## Formulae
 echo "Installing Brew Formulae..."
@@ -62,6 +63,8 @@ brew install mailmate
 
 ### Emacs
 brew install emacs-plus --with-native-comp
+brew install --HEAD sbfnk/formulae/isync
+brew install oauth2ms
 
 ## Casks
 echo "Installing Brew Casks..."
@@ -127,6 +130,7 @@ defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
 defaults write com.apple.finder ShowStatusBar -bool false
 defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool YES
 defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
+defaults write com.freron.MailMate MmMessagesOutlineMoveStrategy -string "unreadOrPrevious"
 
 ## install doom emacs
 git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
@@ -141,12 +145,21 @@ git clone git@github.com:sbfnk/dotfiles_private.git $HOME/code/dotfiles_private
 # linking dot files
 mkdir $HOME/.config
 for dir in $HOME/code/dotfiles*; do
-  for file in $dir/config/*; do
-    ln -sf $file $HOME/.config
-  done
-  for file in $dir/root/*; do
-    ln -sFh $file $HOME/.$(basename $file)
-  done
+  if [ -d $dir/config ]; then
+    for file in $dir/config/*; do
+      ln -sf $file $HOME/.config
+    done
+  fi
+  if [ -d $dir/root ]; then
+    for file in $dir/root/*; do
+      ln -sFh $file $HOME/.$(basename $file)
+    done
+  fi
+  if [ -d $dir/Application\ Support ]; then
+    for file in $dir/Application\ Support/*; do
+      ln -sf $file $HOME/Library/Application\ Support
+    done
+  fi
 done
 
 # Installing Fonts
