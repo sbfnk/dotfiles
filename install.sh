@@ -162,6 +162,8 @@ for dir in $HOME/code/dotfiles*; do
   fi
 done
 
+ln -sFh $HOME/code/dotfiles/bin ~/bin
+
 # Installing Fonts
 git clone git@github.com:shaunsingh/SFMono-Nerd-Font-Ligaturized.git /tmp/SFMono_Nerd_Font
 mv /tmp/SFMono_Nerd_Font/* $HOME/Library/Fonts
