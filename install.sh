@@ -1,5 +1,10 @@
 #!/bin/zsh
 
+SAVE_DIR=$(pwd)
+CODE_DIR=$HOME/code
+
+mkdir $CODE_DIR
+
 # Install xCode cli tools
 echo "Installing commandline tools..."
 xcode-select --install
@@ -60,12 +65,12 @@ brew install svim
 ### Additional apps
 brew install dropbox
 brew install mailmate
-brew install isync
 brew install slack
 
 ### Emacs
 brew install emacs-plus --with-native-comp
 brew install --HEAD sbfnk/formulae/isync
+brew install mu
 brew install oauth2ms
 
 ## Casks
@@ -141,9 +146,8 @@ git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
 
 # Copying and checking out configuration files
 echo "Planting Configuration Files..."
-mkdir $HOME/code
-git clone git@github.com:sbfnk/dotfiles.git $HOME/code/dotfiles
-git clone git@github.com:sbfnk/dotfiles_private.git $HOME/code/dotfiles_private
+git clone git@github.com:sbfnk/dotfiles.git $CODE_DIR/dotfiles
+git clone git@github.com:sbfnk/dotfiles_private.git $CODE_DIR/dotfiles_private
 
 # linking dot files
 mkdir $HOME/.config
@@ -172,12 +176,6 @@ git clone git@github.com:shaunsingh/SFMono-Nerd-Font-Ligaturized.git /tmp/SFMono
 mv /tmp/SFMono_Nerd_Font/* $HOME/Library/Fonts
 rm -rf /tmp/SFMono_Nerd_Font/
 
-# Install oauth2ms
-git clone git@github.com:harishkrupo/oauth2ms.git $HOME/code/oauth2ms
-cd $HOME/code/oauth2ms
-pip install -r requirements.txt
-cp oauth2ms /usr/local/bin
-
 curl -L https://github.com/kvndrsslr/sketchybar-app-font/releases/download/v1.0.23/sketchybar-app-font.ttf -o $HOME/Library/Fonts/sketchybar-app-font.ttf
 
 # Start Services
@@ -190,4 +188,6 @@ brew services start svim
 
 csrutil status
 echo "Add sudoer manually:\n '$(whoami) ALL = (root) NOPASSWD: sha256:$(shasum -a 256 $(which yabai) | awk "{print \$1;}") $(which yabai) --load-sa' to '/private/etc/sudoers.d/yabai'"
+
+cd $SAVE_DIR
 echo "Installation complete...\n"
