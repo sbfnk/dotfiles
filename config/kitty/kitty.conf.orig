@@ -24,7 +24,7 @@
 #:     italic_font      Operator Mono Book Italic
 #:     bold_italic_font Operator Mono Medium Italic
 
-font_size 12.0
+# font_size 11.0
 
 #: Font size (in pts).
 
@@ -728,7 +728,7 @@ font_size 12.0
 
 #: Terminal bell {{{
 
-enable_audio_bell no
+# enable_audio_bell yes
 
 #: The audio bell. Useful to disable it in environments that require
 #: silence.
@@ -1370,7 +1370,7 @@ enable_audio_bell no
 #: See rc_custom_auth <https://sw.kovidgoyal.net/kitty/remote-
 #: control/#rc-custom-auth> for details.
 
-allow_remote_control socket-only
+# allow_remote_control no
 
 #: Allow other programs to control kitty. If you turn this on, other
 #: programs can control all aspects of kitty, including sending text
@@ -1399,7 +1399,7 @@ allow_remote_control socket-only
 #: yes
 #:     Remote control requests are always accepted.
 
-listen_on unix:/tmp/kitty
+# listen_on none
 
 #: Listen to the specified socket for remote control connections. Note
 #: that this will apply to all kitty instances. It can be overridden
@@ -1517,7 +1517,7 @@ listen_on unix:/tmp/kitty
 #: special value of ask means that kitty will ask before opening the
 #: link when clicked.
 
-shell_integration enabled
+# shell_integration enabled
 
 #: Enable shell integration on supported shells. This enables features
 #: such as jumping to previous prompts, browsing the output of the
@@ -1846,9 +1846,6 @@ shell_integration enabled
 #: the aliased kitten to be substituted. So the example above will
 #: cause all invocations of the hints kitten to have the --hints-
 #: offset=0 option applied.
-
-# kitty-scrollback.nvim Kitten alias
-action_alias kitty_scrollback_nvim kitten /Users/eidesfun/.local/share/nvim/lazy/kitty-scrollback.nvim/python/kitty_scrollback_nvim.py
 
 #: Clipboard {{{
 
@@ -2311,16 +2308,6 @@ action_alias kitty_scrollback_nvim kitten /Users/eidesfun/.local/share/nvim/lazy
 
 #: Miscellaneous {{{
 
-map kitty_mod+l kitten themes --reload-in=all Solarized Light
-map kitty_mod+d kitten themes --reload-in=all Solarized Dark
-
-# Browse scrollback buffer in nvim
-map kitty_mod+h kitty_scrollback_nvim
-# Browse output of the last shell command in nvim
-map kitty_mod+g kitty_scrollback_nvim --config ksb_builtin_last_cmd_output
-# Show clicked command output in nvim
-mouse_map ctrl+shift+right press ungrabbed combine : mouse_select_command_output : kitty_scrollback_nvim --config ksb_builtin_last_visited_cmd_output
-
 #: Show documentation
 
 # map kitty_mod+f1 show_kitty_doc overview
@@ -2518,9 +2505,3 @@ mouse_map ctrl+shift+right press ungrabbed combine : mouse_select_command_output
 #: }}}
 
 #: }}}
-
-
-# BEGIN_KITTY_THEME
-# Solarized Dark
-include current-theme.conf
-# END_KITTY_THEME
