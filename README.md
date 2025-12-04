@@ -2,10 +2,6 @@
 My macOS configuration files.
 <img width="1512" alt="Screenshot 2023-02-23 at 20 45 12" src="https://user-images.githubusercontent.com/22680421/221013836-9c06a95a-d33b-48d0-bf1e-ae72e78eb6a1.png">
 
-
-
-
-
 jklö centric navigation and vim moves for my german keyboard.
 nvim as a capable C/C++ debugging environment.
 color scheme consistency across all configurations.
