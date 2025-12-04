@@ -34,7 +34,7 @@ yabai -m config mouse_drop_action            swap
 
 # general space settings
 yabai -m config layout                       bsp
-yabai -m config top_padding                  32
+yabai -m config top_padding                  20
 yabai -m config bottom_padding               4
 yabai -m config left_padding                 4
 yabai -m config right_padding                4
@@ -45,9 +45,9 @@ yabai -m space 1 --label emacs
 yabai -m space 2 --label terminal
 yabai -m space 3 --label mail
 yabai -m space 4 --label web
-yabai -m space 5 --label social
-yabai -m space 6 --label media
-
+yabai -m space 5 --label calendar
+yabai -m space 6 --label social
+yabai -m space 7 --label media
 
 # window rules
 yabai -m rule --add app="^Emacs$" space=emacs
@@ -59,6 +59,7 @@ yabai -m rule --add app="^Arc$" space=web
 yabai -m rule --add app="^Google Chrome$" space=web
 yabai -m rule --add app="^Spotify$" space=media
 yabai -m rule --add app="^Slack$" space=social
+yabai -m rule --add app="^Busycal$" space=calendar
 
 yabai -m rule --add label="Finder" app="^Finder$" title="(Co(py|nnect)|Move|Info|Pref)" manage=off
 yabai -m rule --add label="macfeh" app="^macfeh$" manage=off
@@ -70,7 +71,7 @@ yabai -m rule --add label="Software Update" title="Software Update" manage=off
 yabai -m rule --add label="About This Mac" app="System Information" title="About This Mac" manage=off
 yabai -m rule --add label="GlobalProtect" app="^GlobalProtect$" title="GlobalProtect" manage=off
 yabai -m rule --add label="Telegram" app="^Telegram$" manage=off sub-layer=normal sticky=on
-yabai -m rule --add label="Teams" app="^Microsoft Teams (work or school)$" manage=off sub-layer=normal sticky=off
+yabai -m rule --add label="Teams" app="^Microsoft Teams$" manage=off sub-layer=normal sticky=off
 yabai -m rule --add label="Zoom" app="^zoom.us$" manage=off sub-layer=normal sticky=off
 yabai -m rule --add label="BlueJeans" app="^BlueJeans$" manage=off sub-layer=normal sticky=off
 yabai -m rule --add label="Messages" app="^Messages$" manage=off sub-layer=normal sticky=on
