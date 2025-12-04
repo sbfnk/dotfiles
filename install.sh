@@ -68,10 +68,11 @@ brew install mailmate
 brew install slack
 
 ### Emacs
-brew install emacs-plus --with-native-comp
+brew install emacs-plus
 brew install --HEAD sbfnk/formulae/isync
 brew install mu
 brew install oauth2ms
+brew install timelimit
 
 ## Casks
 echo "Installing Brew Casks..."
@@ -139,6 +140,17 @@ defaults write com.apple.finder ShowStatusBar -bool false
 defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool YES
 defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 defaults write com.freron.MailMate MmMessagesOutlineMoveStrategy -string "unreadOrPrevious"
+
+## install launchagents
+mkdir $HOME/Library
+mkdir $HOME/Library/LaunchAgents
+for file in $HOME/code/dotfiles/launchagents/*; do
+  ln -sf $file $HOME/Library/LaunchAgents
+  filename=$(basename $file .plist)
+  launchctl load $HOME/Library/LaunchAgents/$filename.plist
+  launchctl start $filename
+done
+mkdir $HOME/.log
 
 ## install doom emacs
 git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
