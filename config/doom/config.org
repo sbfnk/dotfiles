@@ -83,6 +83,25 @@ Adjust =:size= if text is too small/large on your display.
 (setq display-line-numbers-type t)
 #+end_src
 
+** Show Modeline in All Popups
+Doom's popup system hides the modeline by default. Always show it so we can
+tell which window has focus.
+#+begin_src emacs-lisp
+(defadvice! +popup-always-show-modeline-a (&rest _)
+  "Always show modeline in popups."
+  :after #'+popup-set-modeline-on-enable-h
+  (setq-local mode-line-format (default-value 'mode-line-format)))
+#+end_src
+
+** Highlight Active Modeline
+Make the active window's modeline more prominent. Uses the theme's highlight color
+so it works across different themes.
+#+begin_src emacs-lisp
+(custom-set-faces!
+  '(mode-line :inherit highlight :box nil)
+  '(mode-line-inactive :inherit shadow :box nil))
+#+end_src
+
 ** macOS Modifier Keys
 This makes Emacs feel more natural on macOS:
 - *Command* (⌘) → Meta (M-) for Emacs commands
