@@ -1,0 +1,673 @@
+#+TITLE: Doom Emacs Configuration
+#+AUTHOR: Sebastian Funk
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+This is my literate Doom Emacs configuration. Each section contains explanations
+of what the code does and why certain choices were made.
+
+After editing this file, run =doom sync= to regenerate config.el and packages.el.
+
+* Packages
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle packages.el
+:END:
+
+These package declarations are tangled to =packages.el=. Doom uses these to
+install packages from MELPA, ELPA, or directly from git repos.
+
+** ESS Extensions
+#+begin_src emacs-lisp
+;; -*- no-byte-compile: t; -*-
+;;; $DOOMDIR/packages.el
+
+(package! ess-smart-equals)        ; context-aware = key in ESS
+(package! tree-sitter-ess-r)       ; tree-sitter support for R
+#+end_src
+
+** Org Extensions
+#+begin_src emacs-lisp
+(package! org-ref)                 ; citations and cross-references
+(package! vulpea)                  ; org-roam workflow helpers
+#+end_src
+
+** Communication
+#+begin_src emacs-lisp
+(package! telega)                  ; Telegram client
+(package! mastodon)                ; Mastodon client
+#+end_src
+
+** AI Tools
+#+begin_src emacs-lisp
+(package! copilot
+  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
+(package! aidermacs)               ; Aider AI pair programming
+(package! claude-code-ide
+  :recipe (:host github :repo "manzaltu/claude-code-ide.el"))
+#+end_src
+
+** Development
+#+begin_src emacs-lisp
+(package! quarto-mode)             ; Quarto documents
+(package! eglot-jl)                ; Julia LSP via eglot
+(package! code-review
+  :recipe (:host github :repo "doomelpa/code-review"))
+#+end_src
+
+** Editing
+#+begin_src emacs-lisp
+(package! evil-embrace)            ; mode-specific surrounds
+(package! atomic-chrome)           ; edit browser text in Emacs
+#+end_src
+
+* Private Configuration
+Load private settings (emails, accounts) from a separate file.
+This file lives in the private dotfiles repo and is symlinked to =~/.config/doom-private/=.
+#+begin_src emacs-lisp
+(load! "private.el" "~/.config/doom-private" t)
+#+end_src
+
+* Basic Configuration
+** Fonts
+- =Fira Code= - monospace font with ligatures for code
+- =Source Sans 3= - clean sans-serif for prose/variable-pitch
+
+Adjust =:size= if text is too small/large on your display.
+#+begin_src emacs-lisp
+(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "Source Sans 3" :size 13))
+#+end_src
+
+** Theme and UI
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-one)
+(setq display-line-numbers-type t)
+#+end_src
+
+** macOS Modifier Keys
+This makes Emacs feel more natural on macOS:
+- *Command* (⌘) → Meta (M-) for Emacs commands
+- *Option* (⌥) → Super (s-) available for custom bindings
+- *Right Option* → passes through for special characters (umlauts, etc.)
+#+begin_src emacs-lisp
+(setq mac-option-modifier 'super)
+(setq mac-right-option-modifier 'none)
+(setq mac-command-modifier 'meta)
+#+end_src
+
+** GPG
+Allow Emacs to prompt for GPG passphrase in minibuffer.
+#+begin_src emacs-lisp
+(setf epa-pinentry-mode 'loopback)
+#+end_src
+
+* Email (mu4e)
+I use mu4e for email with multiple accounts. Account contexts are defined in =private.el=.
+
+** Bookmarks
+Quick access to frequently used mail views. Press the shortcut key in mu4e main view.
+#+begin_src emacs-lisp
+(after! mu4e
+  (setq mu4e-bookmarks
+        '(("(maildir:/work/inbox OR maildir:/work/\"Sent Items\") (date:today..now OR flag:unread) " "Work email (today)" ?b)
+          ("(maildir:/work/inbox OR maildir:/work/\"Sent Items\") " "Work email" ?B)
+          ("(maildir:/gmx/INBOX OR maildir:/gmx/Gesendet) (date:today..now OR flag:unread) " "Various email (new)" ?m)
+          ("(maildir:/gmx/INBOX OR maildir:/gmx/Gesendet) " "Various email" ?M)
+          ("(maildir:/gmail/inbox OR maildir:/gmail/[Gmail]/\".Sent Mail\") (date:today..now OR flag:unread) " "Private email (new)" ?p)
+          ("(maildir:/gmail/inbox OR maildir:/gmail/[Gmail]/\".Sent Mail\") " "Private email" ?P)
+          ("(maildir:/wedding/inbox OR maildir:/wedding/[Gmail]/\".Sent Mail\") (date:today..now OR flag:unread) " "Joint email (new)" ?w)
+          ("(maildir:/wedding/inbox OR maildir:/wedding/[Gmail]/\".Sent Mail\") " "Joint email" ?W)
+          ("(maildir:/rph/inbox OR maildir:/rph/[Gmail]/\".Sent Mail\") (date:today..now OR flag:unread) " "RPH email (new)" ?r)
+          ("(maildir:/rph/inbox OR maildir:/rph/[Gmail]/\".Sent Mail\") " "RPH email" ?R)
+          ("flag:unread" "New email" ?n)))
+  (setq mu4e-change-filenames-when-moving t
+        mu4e-update-interval 300))
+#+end_src
+
+** Update Behavior
+By default, =U= in mu4e fetches mail AND re-indexes. Since I run mbsync as a cron
+job, I usually just want to re-index. This inverts the prefix behavior:
+- =U= → just re-index (fast)
+- =C-u U= → fetch mail and re-index
+#+begin_src emacs-lisp
+(defun sf/mu4e-update-mail-and-index (orig-fun prefix &rest args)
+  (interactive "P")
+  (if prefix (funcall orig-fun nil) (mu4e-update-index)))
+
+(advice-add 'mu4e-update-mail-and-index
+            :around #'sf/mu4e-update-mail-and-index)
+#+end_src
+
+** Sending Mail
+Using msmtpq for queued sending - emails are queued locally and sent in background.
+#+begin_src emacs-lisp
+(setq mail-specify-envelope-from t
+      message-sendmail-f-is-evil nil
+      mail-envelope-from 'header
+      message-sendmail-envelope-from 'header
+      message-send-mail-function 'message-send-mail-with-sendmail
+      sendmail-program "/usr/local/share/msmtp/scripts/msmtpq/msmtpq")
+#+end_src
+
+* ESS (Emacs Speaks Statistics)
+ESS provides IDE-like features for R, Julia, and other statistical languages.
+
+** Smart Equals and Basic Settings
+=ess-smart-equals= makes === context-aware - it inserts =<-= in the right places.
+#+begin_src emacs-lisp
+(after! ess
+  (use-package ess-smart-equals
+    :init   (setq ess-smart-equals-extra-ops '(brace paren percent))
+    :after  (:any ess-r-mode inferior-ess-r-mode ess-r-transcript-mode)
+    :config (ess-smart-equals-activate))
+  (setq comint-scroll-to-bottom-on-output 'others)
+  (setq comint-scroll-show-maximum-output t)
+  (setq ess-nuke-trailing-whitespace-p t)
+  (setq ess-r-smart-operators t)
+  (setq comint-scroll-to-bottom-on-input 'this)
+#+end_src
+
+** Pipe Operators
+Custom functions for inserting the native R pipe operator =|>=.
+
+| Key   | Action                    |
+|-------+---------------------------|
+| =C-`= | Insert pipe with newline  |
+| =C-~= | Insert pipe without newline |
+#+begin_src emacs-lisp
+  (defun then_newline_R_operator ()
+    "|> operator or 'then' pipe operator"
+    (interactive)
+    (just-one-space 1)
+    (insert "|> ")
+    (ess-roxy-newline-and-indent))
+  (defun then_R_operator ()
+    "|> operator or 'then' pipe operator"
+    (interactive)
+    (just-one-space 1)
+    (insert "|> "))
+  (setq tab-always-indent 'complete)
+#+end_src
+
+** Roxygen Templates
+Default template for R documentation comments.
+#+begin_src emacs-lisp
+  (setq ess-roxy-template-alist
+    (list (cons "description"  ".. content for \\description{} (no empty lines) ..")
+          (cons "param"  "")
+          (cons "return" "")
+          (cons "examples" ""))))
+#+end_src
+
+** Keybindings
+#+begin_src emacs-lisp
+(map! :after ess
+ (:map inferior-ess-r-mode-map
+  :n "0" #'comint-bol
+  :i "C-`" #'then_newline_R_operator
+  :i "C-~" #'then_R_operator)
+ (:map ess-mode-map
+  :i "C-`" #'then_newline_R_operator
+  :i "C-~" #'then_R_operator)
+ (:map comint-mode-map
+  :i "M-k" #'comint-previous-matching-input-from-input
+  :i "M-j" #'comint-next-matching-input-from-input))
+#+end_src
+
+** Inferior ESS Hook
+#+begin_src emacs-lisp
+(defun my-inferior-ess-init ()
+  (setq-local ansi-color-for-comint-mode 'filter)
+  (smartparens-mode 1))
+(add-hook 'inferior-ess-mode-hook 'my-inferior-ess-init)
+#+end_src
+
+* Julia
+** Why ESS-Julia instead of julia-repl?
+Doom's default Julia setup uses =julia-repl=, but it has limitations:
+- Each buffer gets its own REPL (annoying in Quarto with multiple code blocks)
+- No easy way to switch between multiple Julia sessions
+
+ESS-Julia gives us the same workflow as R:
+- =C-c C-s= to switch between Julia sessions
+- =C-u M-x julia= to start a named session
+- All buffers share the same REPL by default
+
+** ESS-Julia Mode
+#+begin_src emacs-lisp
+(after! julia-mode
+  ;; Disable julia-repl-mode which Doom enables by default
+  (remove-hook 'julia-mode-hook #'julia-repl-mode)
+  ;; Use ess-julia-mode for .jl files
+  (add-to-list 'auto-mode-alist '("\\.jl\\'" . ess-julia-mode)))
+
+(after! ess
+  ;; Julia executable (adjust path if needed)
+  (setq inferior-julia-program "julia")
+
+  ;; Window placement for Julia REPL - right side, 45% width
+  (set-popup-rule! "^\\*julia.*\\*$"
+    :side 'right :size 0.45 :select nil :quit nil :ttl nil))
+#+end_src
+
+** Quarto/Polymode Integration
+This makes =M-n v v= (eval chunk) work in Julia code blocks within Quarto files,
+just like it does for R. Without this, each code block would try to start a new REPL.
+
+| Key       | Action                    |
+|-----------+---------------------------|
+| =M-n v v= | Eval current chunk        |
+| =M-n v b= | Eval whole buffer         |
+| =C-c C-c= | Eval region/paragraph     |
+| =C-c C-s= | Switch Julia session      |
+#+begin_src emacs-lisp
+(after! polymode
+  ;; Tell polymode to use ess-julia-mode for julia code blocks
+  (add-to-list 'polymode-mode-name-override-alist '(julia . ess-julia-mode))
+
+  ;; Define the eval function for Julia (like poly-R does for R)
+  (defun poly-julia-eval-region (beg end msg)
+    "Eval region in Julia using ESS."
+    (ess-eval-region beg end nil msg))
+
+  ;; Set up polymode eval for ess-julia-mode in polymode buffers
+  (add-hook 'polymode-init-inner-hook
+            (lambda ()
+              (when (eq major-mode 'ess-julia-mode)
+                (setq-local polymode-eval-region-function #'poly-julia-eval-region)))))
+#+end_src
+
+** REPL Display
+Ensure Julia REPL window is displayed when evaluating code (it was staying hidden).
+#+begin_src emacs-lisp
+(after! ess
+  (defun my/display-julia-repl (&rest _)
+    "Display Julia REPL buffer if it exists."
+    (when-let ((buf (seq-find (lambda (b)
+                                (string-match-p "^\\*julia:" (buffer-name b)))
+                              (buffer-list))))
+      (unless (get-buffer-window buf)
+        (display-buffer buf '((display-buffer-reuse-window
+                               display-buffer-pop-up-window)
+                              (reusable-frames . nil))))))
+  ;; Show buffer after eval commands
+  (advice-add 'ess-eval-region :after #'my/display-julia-repl)
+  (advice-add 'ess-eval-region-or-function-or-paragraph :after #'my/display-julia-repl))
+
+(setq lsp-julia-package-dir nil)
+(setq lsp-julia-default-environment "~/.julia/environments/v1.11")
+#+end_src
+
+* Python
+#+begin_src emacs-lisp
+(setq python-interpreter "~/.venv/bin/python")
+(setq python-shell-interpreter "~/.venv/bin/python")
+#+end_src
+
+* Polymode
+Disable LSP integration with polymode to avoid issues with multi-mode buffers.
+See https://github.com/polymode/poly-R/issues/34
+#+begin_src emacs-lisp
+(setq polymode-lsp-integration nil)
+#+end_src
+
+* Magit
+** Default Clone Directory
+#+begin_src emacs-lisp
+(after! magit
+  (setq magit-clone-default-directory "~/code/"))
+#+end_src
+
+** Automatic Workspace Creation
+This is a custom workflow enhancement. When you run =magit-status= or =magit-clone=
+on a repository:
+
+1. The repo is added to projectile's known projects (so =SPC p p= finds it)
+2. A workspace is created/switched to, named after the repo
+3. Magit opens fullframe in that workspace
+
+This means =SPC g g ~/code/new-project= instantly sets up a complete workspace.
+#+begin_src emacs-lisp
+(after! magit
+  (defun my/magit-setup-workspace ()
+    "Ensure project is registered with projectile and has a workspace."
+    (when-let* ((root (or (magit-toplevel) default-directory))
+                (name (file-name-nondirectory (directory-file-name root))))
+      ;; Add to projectile's known projects
+      (projectile-add-known-project root)
+      ;; Create or switch to workspace (only if not already there)
+      (unless (string= (+workspace-current-name) name)
+        (if (member name (+workspace-list-names))
+            (+workspace-switch name)
+          ;; New workspace
+          (+workspace-switch name t)
+          ;; Clean up after everything settles
+          (run-at-time 0.1 nil #'delete-other-windows)))))
+
+  ;; Run when opening magit-status
+  (add-hook 'magit-status-mode-hook #'my/magit-setup-workspace)
+  ;; Run after cloning a repo
+  (add-hook 'magit-post-clone-hook #'my/magit-setup-workspace))
+#+end_src
+
+* Workspaces and Projectile
+Doom's workspaces (built on =persp-mode=) provide buffer isolation per project.
+This is essential for keeping different projects separate.
+
+** Key Bindings Reference
+| Key           | Action                              |
+|---------------+-------------------------------------|
+| =SPC TAB TAB= | Switch workspace                    |
+| =SPC TAB n=   | New workspace                       |
+| =SPC TAB d=   | Delete workspace                    |
+| =SPC TAB r=   | Rename workspace                    |
+| =SPC b b=     | Switch buffer (workspace only)      |
+| =SPC b B=     | Switch buffer (all buffers)         |
+| =SPC b r=     | Remove buffer from workspace        |
+| =SPC p p=     | Switch project (creates workspace)  |
+
+** Basic Setup
+#+begin_src emacs-lisp
+(setq +workspaces-on-switch-project-behavior t)  ; auto-create workspace per project
+(setq persp-auto-save-opt 1)                      ; save workspaces on exit
+(setq projectile-project-search-path '("~/code/")) ; where to find projects
+#+end_src
+
+** Auto-rename Workspaces
+By default, workspaces get names like "code/EpiNow2". This strips the path prefix
+so they're just "EpiNow2". If a workspace with that name already exists, switch to it
+instead of creating a duplicate.
+#+begin_src emacs-lisp
+(after! persp-mode
+  (add-hook 'projectile-after-switch-project-hook
+            (lambda ()
+              (let* ((current (+workspace-current-name))
+                     (basename (file-name-nondirectory (directory-file-name current))))
+                (unless (string= current basename)
+                  (if (member basename (+workspace-list-names))
+                      ;; Workspace with basename exists - switch to it and delete the new one
+                      (let ((new-ws current))
+                        (+workspace-switch basename)
+                        (+workspace-delete new-ws))
+                    ;; No conflict - just rename
+                    (+workspace/rename basename)))))))
+#+end_src
+
+** Buffer Management
+Remove a buffer from the current workspace without killing it.
+The buffer is still accessible via =SPC b B= (global buffer list).
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Remove buffer from workspace" "b r" #'persp-remove-buffer)
+#+end_src
+
+* Org Mode
+** Directories
+#+begin_src emacs-lisp
+(setq org-directory "~/org")
+(setq org-agenda-files '("~/org-roam"))
+#+end_src
+
+** Org-roam
+Zettelkasten-style note-taking with backlinks.
+#+begin_src emacs-lisp
+(after! org-roam
+    :ensure t
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (setq org-roam-directory "~/org-roam")
+    (setq org-roam-complete-everywhere t)
+    :config)
+
+(org-roam-db-autosync-mode)
+#+end_src
+
+** Vulpea Setup
+Vulpea extends org-roam with better note metadata and agenda integration.
+This configures capture templates, inbox, and custom agenda views.
+
+#+begin_src emacs-lisp
+(use-package! vulpea
+  :after org-capture
+  :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
+  :init
+  (require 'vulpea-buffer)
+  (require 'vulpea-db)
+  (require 'vulpea-note)
+  (require 'vulpea-select)
+  (add-to-list 'org-tags-exclude-from-inheritance "project")
+
+  ;; Inbox file - one per machine
+  (defvar vulpea-capture-inbox-file
+    (format "inbox-%s.org" (system-name))
+    "The path to the inbox file, relative to `org-roam-directory'.")
+  (setq vulpea-capture-inbox-file
+        (expand-file-name vulpea-capture-inbox-file org-roam-directory))
+  (unless org-default-notes-file
+    (setq org-default-notes-file vulpea-capture-inbox-file))
+
+  ;; Capture templates
+  (setq org-capture-templates
+        '(("t" "todo" plain (file vulpea-capture-inbox-file)
+           "* TODO %?\n%U\n" :clock-in t :clock-resume t)
+          ("m" "Meeting" entry
+           (function vulpea-capture-meeting-target)
+           (function vulpea-capture-meeting-template)
+           :clock-in t
+           :clock-resume t))))
+
+;; Agenda buffer name
+(defvar vulpea-agenda-main-buffer-name "*agenda:main*"
+  "Name of the main agenda buffer.")
+
+(defvar vulpea-agenda-hide-scheduled-and-waiting-next-tasks t
+  "Non-nil means to hide scheduled and waiting tasks.")
+
+;; Agenda command definitions
+(defconst vulpea-agenda-cmd-refile
+  '(tags "REFILE"
+         ((org-agenda-overriding-header "To refile")
+          (org-tags-match-list-sublevels nil))))
+
+(defconst vulpea-agenda-cmd-today
+  '(agenda ""
+           ((org-agenda-start-day nil)
+            (org-agenda-span 'day)
+            (org-agenda-skip-deadline-prewarning-if-scheduled t)
+            (org-agenda-sorting-strategy
+             '(habit-down time-up category-keep todo-state-down priority-down)))))
+
+(defconst vulpea-agenda-cmd-focus
+  '(tags-todo "FOCUS"
+              ((org-agenda-overriding-header
+                (concat "To focus on"
+                        (if vulpea-agenda-hide-scheduled-and-waiting-next-tasks
+                            "" " (including WAITING and SCHEDULED tasks)")))
+               (org-agenda-skip-function 'vulpea-agenda-skip-habits)
+               (org-tags-match-list-sublevels t)
+               (org-agenda-todo-ignore-scheduled
+                vulpea-agenda-hide-scheduled-and-waiting-next-tasks)
+               (org-agenda-todo-ignore-deadlines
+                vulpea-agenda-hide-scheduled-and-waiting-next-tasks)
+               (org-agenda-todo-ignore-with-date
+                vulpea-agenda-hide-scheduled-and-waiting-next-tasks)
+               (org-agenda-tags-todo-honor-ignore-options t)
+               (org-agenda-sorting-strategy
+                '(todo-state-down priority-down effort-up category-keep)))))
+
+(defconst vulpea-agenda-cmd-waiting
+  '(tags-todo "-CANCELLED+WAITING-READING-FOCUS|+HOLD/!"
+              ((org-agenda-overriding-header
+                (concat "Waiting and Postponed Tasks"
+                        (if vulpea-agenda-hide-scheduled-and-waiting-next-tasks
+                            "" " (including WAITING and SCHEDULED tasks)")))
+               (org-agenda-skip-function 'vulpea-agenda-skip-non-tasks)
+               (org-tags-match-list-sublevels nil)
+               (org-agenda-todo-ignore-scheduled
+                vulpea-agenda-hide-scheduled-and-waiting-next-tasks)
+               (org-agenda-todo-ignore-deadlines
+                vulpea-agenda-hide-scheduled-and-waiting-next-tasks))))
+#+end_src
+
+** Agenda Views
+Custom agenda with vulpea integration.
+#+begin_src emacs-lisp
+(setq org-agenda-prefix-format
+      '((agenda . " %i %(vulpea-agenda-category 12)%?-12t% s")
+        (todo . " %i %(vulpea-agenda-category 12) ")
+        (tags . " %i %(vulpea-agenda-category 12) ")
+        (search . " %i %(vulpea-agenda-category 12) ")))
+
+(setq org-agenda-custom-commands
+   `((" " "Agenda"
+      (,vulpea-agenda-cmd-refile
+       ,vulpea-agenda-cmd-today
+       ,vulpea-agenda-cmd-focus
+       ,vulpea-agenda-cmd-waiting)
+      ((org-agenda-buffer-name vulpea-agenda-main-buffer-name)))))
+#+end_src
+
+** Babel
+Auto-confirm R code execution (don't prompt every time).
+#+begin_src emacs-lisp
+(defun my-org-confirm-babel-evaluate (lang body)
+  (not (string= lang "R")))
+(setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
+
+(setq org-babel-default-header-args:R '((:session . "*R*") (:exports . "both") (:results . "output")))
+#+end_src
+
+* Bibliography
+** BibTeX Auto-key Generation
+When inserting references, automatically generate citation keys in format: =AuthorYY_FirstThreeWords=
+#+begin_src emacs-lisp
+(setq biblio-bibtex-use-autokey t
+      bibtex-autokey-year-length 2
+      bibtex-autokey-year-title-separator "_"
+      bibtex-autokey-titlewords 3
+      bibtex-autokey-titleword-separator ""
+      bibtex-autokey-titleword-length 20)
+#+end_src
+
+** Keybindings
+| Key       | Action                                |
+|-----------+---------------------------------------|
+| =SPC B d= | Insert BibTeX from DOI                |
+| =SPC B s= | Search papers (all sources)           |
+| =SPC B c= | Search CrossRef                       |
+
+In search results buffer:
+| Key   | Action              |
+|-------+---------------------|
+| =i=   | Insert entry        |
+| =RET= | Open URL            |
+| =c=   | Copy to kill ring   |
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix ("B" . "bibliography")
+       :desc "Insert from DOI" "d" #'biblio-doi-insert-bibtex
+       :desc "Search papers" "s" #'biblio-lookup
+       :desc "Search CrossRef" "c" #'biblio-crossref-lookup))
+#+end_src
+
+* Evil Enhancements
+** Embrace
+Extends evil-surround with mode-specific surrounds.
+
+In LaTeX/TeX modes:
+| Key   | Surround with          |
+|-------+------------------------|
+| =S c= | =\command{}= (prompts) |
+| =S l= | =\begin{env}...\end{env}= |
+
+Standard evil-surround keys still work everywhere (=S (=, =S "=, =S t= for HTML tags, etc.)
+#+begin_src emacs-lisp
+(use-package! evil-embrace
+  :after evil-surround
+  :config
+  (evil-embrace-enable-evil-surround-integration)
+  ;; Enable mode-specific hooks (LaTeX, org, etc.)
+  (add-hook 'LaTeX-mode-hook #'embrace-LaTeX-mode-hook)
+  (add-hook 'plain-tex-mode-hook #'embrace-LaTeX-mode-hook)
+  (add-hook 'tex-mode-hook #'embrace-LaTeX-mode-hook)
+  (add-hook 'org-mode-hook #'embrace-org-mode-hook)
+  (setq evil-embrace-show-help-p t))
+#+end_src
+
+** Snipe
+Evil-snipe enhances =f=/=F=/=t=/=T= with 2-character search.
+By default it only searches the current line; this extends it to the visible area.
+
+| Key     | Action                          |
+|---------+---------------------------------|
+| =s xy=  | Jump to next "xy"               |
+| =S xy=  | Jump to previous "xy"           |
+| =;= / =,= | Repeat forward/backward       |
+#+begin_src emacs-lisp
+(setq evil-snipe-scope 'visible)
+#+end_src
+
+* AI Tools
+** Copilot
+GitHub Copilot integration. Tab to accept completions.
+#+begin_src emacs-lisp
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)))
+#+end_src
+
+** GPTel
+Chat with Claude directly in Emacs.
+#+begin_src emacs-lisp
+(setq
+ gptel-model 'claude-3-5-haiku-20241022
+ gptel-backend (gptel-make-anthropic "Claude"
+                 :stream t :key gptel-api-key))
+#+end_src
+
+** Aider
+AI pair programming tool. =SPC c A= opens the transient menu.
+#+begin_src emacs-lisp
+(use-package! aidermacs
+  :custom
+  (aidermacs-use-architect-mode t)
+  (aidermacs-default-model "sonnet"))
+
+(map! :after aidermacs
+      :leader
+      :desc "aidermacs"
+  "c A" #'aidermacs-transient-menu)
+#+end_src
+
+** Claude Code
+Two packages for Claude Code integration:
+- =claude-code.el= - Terminal interface (=C-c c=)
+- =claude-code-ide.el= - IDE integration with MCP tools (=C-c C-'=)
+
+*Tip:* In the Claude Code vterm buffer, use =C-c C-t= to enter copy mode for scrolling,
+then =ESC= to enable normal vim motions, =C-c C-t= again to exit.
+#+begin_src emacs-lisp
+(use-package claude-code
+  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
+  :config (claude-code-mode)
+  :bind-keymap ("C-c c" . claude-code-command-map))
+
+(use-package! claude-code-ide
+  :bind ("C-c C-'" . claude-code-ide-menu)
+  :config
+  (claude-code-ide-emacs-tools-setup))
+#+end_src
+
+** Atomic Chrome
+Edit browser text areas with Emacs. Install the "Atomic Chrome" browser extension.
+#+begin_src emacs-lisp
+(use-package! atomic-chrome
+  :commands (atomic-chrome-start-server)
+  :config
+  (setq-default atomic-chrome-extension-type-list '(atomic-chrome))
+  (atomic-chrome-start-server))
+#+end_src
