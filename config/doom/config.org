@@ -416,7 +416,7 @@ Remove a buffer from the current workspace without killing it.
 The buffer is still accessible via =SPC b B= (global buffer list).
 #+begin_src emacs-lisp
 (map! :leader
-      :desc "Remove buffer from workspace" "b r" #'persp-remove-buffer)
+      :desc "Remove buffer from workspace" "b W" #'persp-remove-buffer)
 #+end_src
 
 * Org Mode
