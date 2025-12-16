@@ -678,6 +678,7 @@ then =ESC= to enable normal vim motions, =C-c C-t= again to exit.
 (use-package! claude-code-ide
   :bind ("C-c C-'" . claude-code-ide-menu)
   :config
+  (setq claude-code-ide-focus-on-open nil)
   (claude-code-ide-emacs-tools-setup))
 #+end_src
 
