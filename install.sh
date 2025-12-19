@@ -141,7 +141,7 @@ defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool YES
 defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 defaults write com.freron.MailMate MmMessagesOutlineMoveStrategy -string "unreadOrPrevious"
 
-## prepare directories for launchagents (linking done by link.sh)
+## prepare directories for launchagents
 mkdir -p $HOME/Library/LaunchAgents
 mkdir -p $HOME/.log
 
