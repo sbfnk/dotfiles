@@ -1,3 +1,4 @@
 # Doom Emacs - generated from config.org
 config/doom/config.el
 config/doom/packages.el
+config/doom/custom.el
