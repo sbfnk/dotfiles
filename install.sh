@@ -141,16 +141,9 @@ defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool YES
 defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 defaults write com.freron.MailMate MmMessagesOutlineMoveStrategy -string "unreadOrPrevious"
 
-## install launchagents
-mkdir $HOME/Library
-mkdir $HOME/Library/LaunchAgents
-for file in $HOME/code/dotfiles/launchagents/*; do
-  ln -sf $file $HOME/Library/LaunchAgents
-  filename=$(basename $file .plist)
-  launchctl load $HOME/Library/LaunchAgents/$filename.plist
-  launchctl start $filename
-done
-mkdir $HOME/.log
+## prepare directories for launchagents (linking done by link.sh)
+mkdir -p $HOME/Library/LaunchAgents
+mkdir -p $HOME/.log
 
 ## install doom emacs
 git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
@@ -162,26 +155,14 @@ git clone git@github.com:sbfnk/dotfiles.git $CODE_DIR/dotfiles
 git clone git@github.com:sbfnk/dotfiles_private.git $CODE_DIR/dotfiles_private
 
 # linking dot files
-mkdir $HOME/.config
-for dir in $HOME/code/dotfiles*; do
-  if [ -d $dir/config ]; then
-    for file in $dir/config/*; do
-      ln -sf $file $HOME/.config
-    done
-  fi
-  if [ -d $dir/root ]; then
-    for file in $dir/root/*; do
-      ln -sFh $file $HOME/.$(basename $file)
-    done
-  fi
-  if [ -d $dir/Application\ Support ]; then
-    for file in $dir/Application\ Support/*; do
-      ln -sf $file $HOME/Library/Application\ Support
-    done
-  fi
-done
+$CODE_DIR/dotfiles/link.sh
 
-ln -sFh $HOME/code/dotfiles/bin ~/bin
+# load and start launchagents
+for file in $CODE_DIR/dotfiles/launchagents/*; do
+  filename=$(basename $file .plist)
+  launchctl load $HOME/Library/LaunchAgents/$filename.plist
+  launchctl start $filename
+done
 
 # Installing Fonts
 git clone git@github.com:shaunsingh/SFMono-Nerd-Font-Ligaturized.git /tmp/SFMono_Nerd_Font
