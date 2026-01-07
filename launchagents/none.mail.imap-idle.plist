@@ -3,21 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>none.mail.sendqueue</string>
+	<string>none.mail.imap-idle</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/opt/homebrew/bin/timelimit</string>
-		<string>-t</string>
-		<string>60</string>
-		<string>__HOME__/.local/bin/msmtp-queue</string>
-		<string>-r</string>
+		<string>__HOME__/go/bin/goimapnotify</string>
 	</array>
 	<key>StandardOutPath</key>
-	<string>__HOME__/.log/msmtpq.log</string>
+	<string>__HOME__/.log/goimapnotify.log</string>
 	<key>StandardErrorPath</key>
-	<string>__HOME__/.log/msmtpq.err</string>
-	<key>StartInterval</key>
-	<integer>60</integer>
+	<string>__HOME__/.log/goimapnotify.err</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
 	<key>LimitLoadToSessionType</key>
 	<string>Aqua</string>
 </dict>
