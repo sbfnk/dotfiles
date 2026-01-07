@@ -3,21 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>none.mail.sendqueue</string>
+	<string>none.mail.imap-idle</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/opt/homebrew/bin/timelimit</string>
-		<string>-t</string>
-		<string>60</string>
-		<string>/Users/eidesfun/.local/bin/msmtp-queue</string>
-		<string>-r</string>
+		<string>/Users/eidesfun/go/bin/goimapnotify</string>
 	</array>
 	<key>StandardOutPath</key>
-	<string>/Users/eidesfun/.log/msmtpq.log</string>
+	<string>/Users/eidesfun/.log/goimapnotify.log</string>
 	<key>StandardErrorPath</key>
-	<string>/Users/eidesfun/.log/msmtpq.err</string>
-	<key>StartInterval</key>
-	<integer>60</integer>
+	<string>/Users/eidesfun/.log/goimapnotify.err</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
 	<key>LimitLoadToSessionType</key>
 	<string>Aqua</string>
 </dict>
