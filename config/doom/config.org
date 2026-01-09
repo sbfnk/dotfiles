@@ -197,13 +197,13 @@ Auto-select From address based on the message being replied to.
           "Sebastian Funk <funks@gmx.net>"
           "Sebastian Funk <sebfnk@yahoo.co.uk>"))
 
-  ;; Default identity
+  ;; Default identity - use "Sent" not "Sent Items" (space causes issues)
   (setq notmuch-fcc-dirs
-        '(("sebastian.funk@lshtm.ac.uk" . "lshtm/Sent Items")
+        '(("sebastian.funk@lshtm.ac.uk" . "lshtm/Sent")
           ("funk.seb@gmail.com" . "private/[Gmail]/Sent Mail")
           ("sgwinchh@gmail.com" . "joint/[Gmail]/Sent Mail")
           ("funks@gmx.net" . "gmx/Gesendet")
-          (".*" . "lshtm/Sent Items")))
+          (".*" . "lshtm/Sent")))
 
   ;; Auto-detect identity from To/Cc when replying
   (setq notmuch-always-prompt-for-sender nil)
