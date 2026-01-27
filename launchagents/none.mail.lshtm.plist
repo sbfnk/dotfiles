@@ -10,7 +10,7 @@
 	<string>-t</string>
 	<string>120</string>
         <string>/Users/eidesfun/bin/getmail.sh</string>
-	<string>lshtm</string>
+	<string>work</string>
 	</array>
         <key>StandardOutPath</key>
         <string>/Users/eidesfun/.log/getmail.log</string>
