@@ -9,7 +9,7 @@
         <string>/opt/homebrew/bin/timelimit</string>
 	<string>-t</string>
 	<string>120</string>
-        <string>/Users/eidesfun/bin/getmail.sh</string>
+        <string>/Users/eidesfun/.local/bin/getmail.sh</string>
 	<string>public</string>
 	</array>
         <key>StandardOutPath</key>
