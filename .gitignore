@@ -15,3 +15,6 @@ __pycache__/
 # Conversation transcripts
 conversation-*.txt
 config/kitty/current-theme.conf
+
+# Notmuch HTML export tempfiles
+notmuch-*.html
