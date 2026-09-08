@@ -54,9 +54,11 @@ These apply to org-roam files indexed at
    non-meeting content). When adding a meeting entry, put it at the
    top of the `* Meetings` section.
 
-2. **Transcripts and summaries** go as sub-headings under the meeting
-   entry they belong to, tagged `:ai:transcript:` and `:ai:`
-   respectively.
+2. **Summaries** go as a sub-heading under the meeting entry they
+   belong to, tagged `:ai:`. **Never store the transcript itself** —
+   not in org-roam, not in a project repo. Summarise it, then delete
+   it, and leave no `Transcript:` file link behind. The summary is the
+   record, so make it carry the substance.
 
 3. **TODOs**: AI-suggested TODOs get the `:ai:` tag. Never remove or
    mark done a human-created TODO — only the human does that.
@@ -99,18 +101,12 @@ development trajectory./
 <YYYY-MM-DD Day>
 /Your notes — terse, yours, untagged./
 
-*** Transcript                                               :ai:transcript:
+*** Summary                                                  :ai:
 :PROPERTIES:
 :VISIBILITY: folded
 :SOURCE:
 :END:
-/Full or partial transcript. Delete after a quarter./
-
-*** Summary                                                  :ai:
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
-/Dense bullet-point summary generated from transcript./
+/Dense bullet-point summary. The transcript is not kept./
 
 * Comms
 /Your notes on important exchanges./
