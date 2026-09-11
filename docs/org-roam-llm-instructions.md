@@ -100,10 +100,12 @@ These apply to org-roam files indexed at
 Talks live under `* Notes` in the Talks node, one `**` heading per
 talk (`Speaker: title`, ID drawer, date).
 
-1. When a summary replaces the notes taken during a talk, put its
-   bullets directly under the talk heading, with no `Summary`
-   sub-heading: it would be the only child. Tag the talk heading
-   `:ai:` instead.
+1. When a summary replaces the notes taken during a talk, use the
+   meeting-summary shape under the talk heading: key points, then
+   `Detail`, then `Follow-up` (questions to ask, papers to read) where
+   there is any. When only one level would result, leave the
+   sub-headings out and put the bullets directly under the talk
+   heading. Either way, tag the talk heading `:ai:`.
 
 2. Otherwise the meeting-summary rules above apply. Drop the raw notes
    and any `:SOURCE:` property, keep the user's own views as Seb's,
