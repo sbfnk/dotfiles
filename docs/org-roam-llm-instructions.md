@@ -95,6 +95,20 @@ These apply to org-roam files indexed at
    new about the person's development. Don't repeat what's already
    there.
 
+## Talk notes
+
+Talks live under `* Notes` in the Talks node, one `**` heading per
+talk (`Speaker: title`, ID drawer, date).
+
+1. When a summary replaces the notes taken during a talk, put its
+   bullets directly under the talk heading, with no `Summary`
+   sub-heading: it would be the only child. Tag the talk heading
+   `:ai:` instead.
+
+2. Otherwise the meeting-summary rules above apply. Drop the raw notes
+   and any `:SOURCE:` property, keep the user's own views as Seb's,
+   and link the papers cited.
+
 ## People-node template
 
 ```org
