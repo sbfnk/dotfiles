@@ -59,6 +59,24 @@ These apply to org-roam files indexed at
    not in org-roam, not in a project repo. Summarise it, then delete
    it, and leave no `Transcript:` file link behind. The summary is the
    record, so make it carry the substance.
+   - The same shape applies whatever the source: a live transcript, a
+     recording's transcript, or notes taken by hand.
+   - The body of `*** Summary` is 5 to 8 key-point bullets that tell
+     someone in under a minute what came out of the meeting: the
+     conclusions, decisions and advice that matter.
+   - Below it, `**** Detail :ai:` holds one bullet per topic, each with
+     at most three sub-bullets carrying the reasoning, figures, names
+     or advice someone would need to act on it in six months.
+   - Leave out the back-and-forth, reassurance and asides that change
+     nothing. Where people took different views, keep each view and
+     who held it.
+   - Transcripts and quick notes both mangle names. Where context
+     settles who someone is (the meeting title, a full name used
+     elsewhere, how others address them), use that spelling
+     throughout. Never infer anyone's gender: refer to people by name.
+   - The user is Seb in summaries, including where they took the notes
+     or spoke as `Me:`.
+   - Actions follow the TODO rules below and stay out of the summary.
 
 3. **TODOs**: AI-suggested TODOs get the `:ai:` tag. Never remove or
    mark done a human-created TODO — only the human does that.
@@ -106,7 +124,11 @@ development trajectory./
 :VISIBILITY: folded
 :SOURCE:
 :END:
-/Dense bullet-point summary. The transcript is not kept./
+/Key points: a few bullets on what came out of the meeting./
+
+**** Detail                                                  :ai:
+/Per topic: the reasoning, figures and names worth keeping.
+The transcript is not kept./
 
 * Comms
 /Your notes on important exchanges./
