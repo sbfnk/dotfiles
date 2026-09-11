@@ -37,7 +37,13 @@ in detail underneath.
 - **TODOs**: `** TODO task description` — states are TODO, DONE, KILL.
   Use org TODO/DONE keywords, not `- [ ]` / `- [X]` checkboxes, for
   any tracked action items.
-- **Timestamps**: `<2026-03-18 Wed>` — always include day-of-week.
+- **Timestamps**: always include day-of-week. Active `<2026-03-18 Wed>`
+  puts the entry in the agenda on that date, so use it only on the
+  planning line or where that is the point (e.g. a meeting's date).
+  Every other date in body text is inactive: `[2026-03-18 Wed]`.
+- **Planning line**: SCHEDULED and DEADLINE share one line directly
+  under the heading — `SCHEDULED: <…> DEADLINE: <…>`. Org reads only
+  that line; a DEADLINE on a line of its own is not a deadline.
 - **Description lists**: `- Term :: Description`.
 - **Links**: `[[id:UUID][Display text]]` for org-roam links.
 - **Properties**: `:PROPERTIES:` drawer under heading, key-value pairs.
