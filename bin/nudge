@@ -336,6 +336,10 @@ MINI_SSH_TUNNEL=192.168.178.201
 check_mini_ssh() {
   local off=0 off_file="$STATE_DIR/mini-ssh.offset" keys_file="$STATE_DIR/mini-ssh.keys"
   local out size keys expected line ip n=0 last=""
+  # The machine that keeps the log is the mini itself, which runs this check
+  # too. There "ssh mini" is an ssh to itself that has no key and fails, and
+  # each failed attempt would show up in the log as a stranger's.
+  [ -f "$MINI_SSH_LOG" ] && return 0
   mkdir -p "$STATE_DIR"
   [ -f "$off_file" ] && off=$(<"$off_file")
   # A log smaller than the saved offset has been rotated: read it from the top.
