@@ -35,7 +35,8 @@ nudge — standing conditions worth surfacing
   nudge list                    Everything, including snoozed and decayed.
   nudge bar                     One line for the tmux status bar.
   nudge shell                   Greeting for new shells.
-  nudge check                   Re-run the polled checks (hourly job).
+  nudge check [home]            Re-run the polled checks (hourly job), or
+                                only the home-network one (every 5 min).
 USAGE
 }
 
@@ -294,7 +295,60 @@ check_sbfnk_bot() {
   fi
 }
 
+# The home network as seen from here, on the home LAN or through the WireGuard
+# tunnel: the FritzBox resolves through AdGuard on the mini and fails over to
+# public DNS when AdGuard stops answering. Prints what is wrong; prints nothing
+# when all is well, and returns 2 when home is out of sight (away, tunnel off).
+HOME_FRITZ=192.168.178.1
+HOME_MINI=192.168.178.70
+home_problem() {
+  local answer
+  if ! dig +time=2 +tries=1 @"$HOME_FRITZ" fritz.box A >/dev/null 2>&1; then
+    scutil --nc list 2>/dev/null | grep -q '(Connected).*com\.wireguard' || return 2
+    echo "WireGuard is up but the FritzBox is unreachable"; return 0
+  fi
+  if ! nc -z -G 3 "$HOME_MINI" 22 >/dev/null 2>&1; then
+    echo "mini unreachable"; return 0
+  fi
+  if ! answer=$(dig +time=2 +tries=1 @"$HOME_MINI" doubleclick.net A 2>/dev/null); then
+    echo "AdGuard not answering, FritzBox on public DNS"; return 0
+  fi
+  if ! printf '%s\n' "$answer" | grep -qE 'status: NXDOMAIN|IN[[:space:]]+A[[:space:]]+0\.0\.0\.0'; then
+    echo "AdGuard not blocking ads"; return 0
+  fi
+  # The FritzBox drops AdGuard's 0.0.0.0 and passes NXDOMAIN, so a blocked
+  # domain comes back without an address; a real one means public DNS.
+  answer=$(dig +time=2 +tries=1 +short @"$HOME_FRITZ" doubleclick.net A 2>/dev/null | tail -1)
+  case "$answer" in
+    "" | 0.0.0.0) ;;
+    *) echo "FritzBox bypassing AdGuard" ;;
+  esac
+}
+
+# Runs every few minutes from its own launchd job. A DNS outage heals within a
+# minute or two on its own, so a problem is raised only after HOME_GRACE runs
+# in a row have seen it.
+check_home() {
+  local problem rc fails=0 fails_file="$STATE_DIR/home.fails"
+  problem=$(home_problem); rc=$?
+  [ "$rc" = 2 ] && return 0
+  if [ -z "$problem" ]; then
+    rm -f "$fails_file"
+    cmd_clear home
+    return
+  fi
+  mkdir -p "$STATE_DIR"
+  [ -f "$fails_file" ] && fails=$(<"$fails_file")
+  fails=$((fails + 1))
+  echo "$fails" > "$fails_file"
+  [ "$fails" -ge "${NUDGE_HOME_GRACE:-3}" ] &&
+    cmd_raise home -p 10 -k "home:$problem" "home: $problem"
+}
+
 cmd_check() {
+  case "${1:-}" in
+    home) check_home; return ;;
+  esac
   check_reboot
   check_claude_backup
   check_sbfnk_bot
@@ -307,7 +361,7 @@ case "${1:-shell}" in
   list) cmd_list ;;
   bar) cmd_bar ;;
   shell) cmd_shell ;;
-  check) cmd_check ;;
+  check) shift; cmd_check "$@" ;;
   -h | --help | help) usage ;;
   *) echo "nudge: unknown command '$1'" >&2; usage >&2; exit 1 ;;
 esac
