@@ -325,6 +325,53 @@ home_problem() {
   esac
 }
 
+# SSH activity on the mini from anywhere but this laptop, read from the log its
+# sshd-watch daemon keeps (bin/install-sshd-watch). This laptop is whatever
+# 192.168.178.x address it has now plus its WireGuard address; other trusted
+# sources go one per line in ~/.config/dotfiles/mini-ssh-sources. Logins and
+# key changes are events, not conditions that resolve, so these nudges stay
+# until cleared by hand once looked into.
+MINI_SSH_LOG=/var/log/sshd-watch.log
+MINI_SSH_TUNNEL=192.168.178.201
+check_mini_ssh() {
+  local off=0 off_file="$STATE_DIR/mini-ssh.offset" keys_file="$STATE_DIR/mini-ssh.keys"
+  local out size keys expected line ip n=0 last=""
+  mkdir -p "$STATE_DIR"
+  [ -f "$off_file" ] && off=$(<"$off_file")
+  # A log smaller than the saved offset has been rotated: read it from the top.
+  out=$(ssh -o BatchMode=yes -o ConnectTimeout=5 mini "
+    s=\$(stat -f %z $MINI_SSH_LOG) || exit 1
+    o=$off; [ \"\$s\" -lt \"\$o\" ] && o=0
+    echo \"\$s\"
+    shasum -a 256 .ssh/authorized_keys | cut -c1-16
+    tail -c +\$((o + 1)) $MINI_SSH_LOG | head -c \$((s - o))" 2>/dev/null) || return 0
+  size=$(sed -n 1p <<< "$out")
+  keys=$(sed -n 2p <<< "$out")
+
+  expected=" $MINI_SSH_TUNNEL $(ifconfig 2>/dev/null | awk '/inet 192\.168\.178\./ {printf "%s ", $2}')"
+  expected="$expected $(sed 's/#.*//' "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/mini-ssh-sources" 2>/dev/null | tr -s ' \n' ' ') "
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    # Every format sshd logs here ends the source address with "IP port N".
+    ip=$(sed -E 's/.* ([^ ]+) port [0-9]+.*/\1/' <<< "$line")
+    case "$expected" in *" $ip "*) continue ;; esac
+    n=$((n + 1))
+    case "$line" in
+      *"Accepted publickey"*) last="login from $ip" ;;
+      *) last="failed attempt from $ip" ;;
+    esac
+  done < <(sed '1,2d' <<< "$out")
+  [ "$n" -gt 0 ] && cmd_raise mini-ssh -p 5 -k "mini-ssh:$NOW" \
+    "mini SSH: $n event(s) not from this laptop, last $last — see $MINI_SSH_LOG, then nudge clear mini-ssh"
+
+  if [ -s "$keys_file" ] && [ "$(<"$keys_file")" != "$keys" ]; then
+    cmd_raise mini-keys -p 5 -k "mini-keys:$keys" \
+      "mini: ~/.ssh/authorized_keys changed — check it, then nudge clear mini-keys"
+  fi
+  [ -n "$keys" ] && echo "$keys" > "$keys_file"
+  [ -n "$size" ] && echo "$size" > "$off_file"
+}
+
 # Runs every few minutes from its own launchd job. A DNS outage heals within a
 # minute or two on its own, so a problem is raised only after HOME_GRACE runs
 # in a row have seen it.
@@ -332,6 +379,7 @@ check_home() {
   local problem rc fails=0 fails_file="$STATE_DIR/home.fails"
   problem=$(home_problem); rc=$?
   [ "$rc" = 2 ] && return 0
+  check_mini_ssh
   if [ -z "$problem" ]; then
     rm -f "$fails_file"
     cmd_clear home
