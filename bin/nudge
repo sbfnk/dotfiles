@@ -325,16 +325,19 @@ home_problem() {
   esac
 }
 
-# SSH activity on the mini from anywhere but this laptop, read from the log its
-# sshd-watch daemon keeps (bin/install-sshd-watch). This laptop is whatever
-# 192.168.178.x address it has now plus its WireGuard address; other trusted
-# sources go one per line in ~/.config/dotfiles/mini-ssh-sources. Logins and
-# key changes are events, not conditions that resolve, so these nudges stay
-# until cleared by hand once looked into.
+# SSH activity on the mini worth a look, read from the log its sshd-watch
+# daemon keeps (bin/install-sshd-watch). The mini's SSH is open to the internet,
+# where failed attempts are routine; what matters is a login from an address
+# never seen before, such as a stolen key used elsewhere, and any failure from
+# inside the home network. Each new address alerts once and is then known; this
+# laptop's 192.168.178.x and WireGuard addresses always are. Logins and key
+# changes are events, not conditions that resolve, so these nudges stay until
+# cleared by hand once looked into.
 MINI_SSH_LOG=/var/log/sshd-watch.log
 MINI_SSH_TUNNEL=192.168.178.201
 check_mini_ssh() {
   local off=0 off_file="$STATE_DIR/mini-ssh.offset" keys_file="$STATE_DIR/mini-ssh.keys"
+  local seen_file="$STATE_DIR/mini-ssh.seen"
   local out size keys expected line ip n=0 last=""
   # The machine that keeps the log is the mini itself, which runs this check
   # too. There "ssh mini" is an ssh to itself that has no key and fails, and
@@ -353,20 +356,24 @@ check_mini_ssh() {
   keys=$(sed -n 2p <<< "$out")
 
   expected=" $MINI_SSH_TUNNEL $(ifconfig 2>/dev/null | awk '/inet 192\.168\.178\./ {printf "%s ", $2}')"
-  expected="$expected $(sed 's/#.*//' "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/mini-ssh-sources" 2>/dev/null | tr -s ' \n' ' ') "
+  expected="$expected $(tr -s ' \n' ' ' < "$seen_file" 2>/dev/null) "
   while IFS= read -r line; do
     [ -n "$line" ] || continue
     # Every format sshd logs here ends the source address with "IP port N".
     ip=$(sed -E 's/.* ([^ ]+) port [0-9]+.*/\1/' <<< "$line")
     case "$expected" in *" $ip "*) continue ;; esac
-    n=$((n + 1))
     case "$line" in
-      *"Accepted publickey"*) last="login from $ip" ;;
-      *) last="failed attempt from $ip" ;;
+      *"Accepted publickey"*)
+        last="login from new address $ip"
+        echo "$ip" >> "$seen_file"
+        expected="$expected$ip " ;;
+      *)
+        case "$ip" in 192.168.178.*) last="failed attempt from $ip at home" ;; *) continue ;; esac ;;
     esac
+    n=$((n + 1))
   done < <(sed '1,2d' <<< "$out")
   [ "$n" -gt 0 ] && cmd_raise mini-ssh -p 5 -k "mini-ssh:$NOW" \
-    "mini SSH: $n event(s) not from this laptop, last $last — see $MINI_SSH_LOG, then nudge clear mini-ssh"
+    "mini SSH: $last ($n event(s)) — see $MINI_SSH_LOG, then nudge clear mini-ssh"
 
   if [ -s "$keys_file" ] && [ "$(<"$keys_file")" != "$keys" ]; then
     cmd_raise mini-keys -p 5 -k "mini-keys:$keys" \
@@ -381,9 +388,9 @@ check_mini_ssh() {
 # in a row have seen it.
 check_home() {
   local problem rc fails=0 fails_file="$STATE_DIR/home.fails"
+  check_mini_ssh
   problem=$(home_problem); rc=$?
   [ "$rc" = 2 ] && return 0
-  check_mini_ssh
   if [ -z "$problem" ]; then
     rm -f "$fails_file"
     cmd_clear home
