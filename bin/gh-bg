@@ -15,8 +15,23 @@ set -uo pipefail
 label="$1"
 shift
 
+# A variable as the person at the keyboard has it. In tmux the pane keeps the
+# environment it started with, while the session's follows the client that
+# attached last (update-environment), so a session started at the desk and
+# attached later over SSH reads as SSH.
+client_env() {
+  local line
+  if [ -n "${TMUX:-}" ] && line="$(tmux show-environment "$1" 2>/dev/null)"; then
+    case "$line" in
+      "$1="*) printf '%s' "${line#*=}" ;;
+    esac
+    return 0
+  fi
+  printf '%s' "${!1:-}"
+}
+
 # Over SSH a notification would show on the far machine's screen, if at all.
-if [ -n "${SSH_CONNECTION:-}" ]; then
+if [ -n "$(client_env SSH_CONNECTION)" ]; then
   exec "$@"
 elif command -v osascript >/dev/null 2>&1; then
   notify() {
@@ -28,13 +43,16 @@ end run
 EOF
   }
 elif command -v notify-send >/dev/null 2>&1 \
-  && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+  && [ -n "$(client_env DISPLAY)$(client_env WAYLAND_DISPLAY)" ]; then
   notify() { notify-send "$1" "$2" >/dev/null 2>&1; }
 else
   exec "$@"
 fi
 
 (
+  # gh-dash returns at once, so the window may close mid-merge: its hangup
+  # must not kill the command (an ignored SIGHUP carries over to it).
+  trap '' HUP
   if out="$("$@" 2>&1)"; then
     notify "$label" "done"
   else
