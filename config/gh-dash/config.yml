@@ -22,9 +22,11 @@ keybindings:
   prs:
     # V and M run in the background (gh-bg) and report in a notification, so
     # gh-dash does not freeze while gh works and a failure still shows.
-    # gh-pr-merge deletes the branch where there is no merge queue. With
-    # --auto, gh merges (or queues) at once when the PR can merge and otherwise
-    # enables auto-merge, which needs "Allow auto-merge" in the repository.
+    # With --auto, gh merges (or queues) at once when the PR can merge and
+    # otherwise enables auto-merge, which needs "Allow auto-merge" in the
+    # repository. gh-pr-merge deletes the branch only on an immediate merge
+    # without a merge queue; otherwise that is up to the repository's
+    # "Automatically delete head branches" setting.
     - key: V
       name: approve and merge, or auto-merge
       command: >
