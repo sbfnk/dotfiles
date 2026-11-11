@@ -50,6 +50,9 @@ else
 fi
 
 (
+  # gh-dash returns at once, so the window may close mid-merge: its hangup
+  # must not kill the command (an ignored SIGHUP carries over to it).
+  trap '' HUP
   if out="$("$@" 2>&1)"; then
     notify "$label" "done"
   else
