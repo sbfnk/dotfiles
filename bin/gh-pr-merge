@@ -17,7 +17,7 @@ shift 2
 
 # shellcheck disable=SC2016  # GraphQL variables, not shell ones
 queue="$(gh api graphql \
-  -F owner="${repo%%/*}" -F name="${repo#*/}" -F number="$number" \
+  -f owner="${repo%%/*}" -f name="${repo#*/}" -F number="$number" \
   -f query='query($owner: String!, $name: String!, $number: Int!) {
     repository(owner: $owner, name: $name) {
       pullRequest(number: $number) { isMergeQueueEnabled }
