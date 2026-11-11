@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# gh-pr-merge — gh pr merge that also works where the base branch has a
+# merge queue.
+#
+# gh refuses --delete-branch where there is a merge queue, so it is passed only
+# where there is none, and the queue sets the merge method. gh deletes the
+# branch only when it merges straight away: after a merge queue or auto-merge
+# (--auto) that is left to the repository's "Automatically delete head
+# branches" setting.
+#
+# Usage: gh-pr-merge OWNER/REPO NUMBER [GH PR MERGE FLAGS...]
+set -euo pipefail
+
+[ $# -ge 2 ] || { echo "usage: gh-pr-merge OWNER/REPO NUMBER [FLAGS...]" >&2; exit 2; }
+repo="$1" number="$2"
+shift 2
+
+# shellcheck disable=SC2016  # GraphQL variables, not shell ones
+queue="$(gh api graphql \
+  -f owner="${repo%%/*}" -f name="${repo#*/}" -F number="$number" \
+  -f query='query($owner: String!, $name: String!, $number: Int!) {
+    repository(owner: $owner, name: $name) {
+      pullRequest(number: $number) { isMergeQueueEnabled }
+    }
+  }' \
+  -q .data.repository.pullRequest.isMergeQueueEnabled)"
+
+if [ "$queue" = true ]; then
+  exec gh pr merge -R "$repo" "$number" "$@"
+else
+  exec gh pr merge --delete-branch -R "$repo" "$number" "$@"
+fi
