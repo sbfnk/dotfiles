@@ -97,6 +97,9 @@ case $(basename "${editor%% *}") in
   nvim) $editor -c "luafile $dir/keys.lua" "$file" ;;
   *) $editor "$file" ;;
 esac
+# The editor hands back the terminal as it found it, which under gh-dash can
+# be raw mode: Enter then reaches read as a literal ^M and ^C does nothing.
+stty sane < /dev/tty 2>/dev/null || true
 
 # Walk the diff, tracking the file and the line each ">>" comment follows.
 # A comment on an added or unchanged line goes on the new file's line (RIGHT);
