@@ -124,9 +124,12 @@ Repeat until a round comes back clean or you hit the cap:
    commit nobody can review.
 
 4. **Address each finding, one commit each.** For each thread:
-   - **Fix it** — minimal change, targeted at that finding alone. Stage only the
-     affected files. Commit with a message describing the fix, not the review
-     (`Guard against zero-length input`, not `address review comment 3`). Then
+   - **Fix it** — the smallest change that corrects it, at the reported place
+     and wherever the same defect occurs in the code the PR touches (another
+     method of the same function, the other branch, another call site); name
+     those places in the reply. Stage only the affected files. Commit with a
+     message describing the fix, not the review (`Guard against zero-length
+     input`, not `address review comment 3`). Then
      reply to the thread saying what you changed, with the commit SHA — as
      **`sbfnk-bot`**, the plain authenticated account, because that reply is the
      author answering the review:
