@@ -58,7 +58,8 @@ CLAUDE.md; the bot has it in every prompt.
 - Run the tests for the code you changed: the test files that cover it, and
   any you added. Leave the full suite and the version and OS matrix to CI,
   which runs them on every push anyway.
-- Write a test that fails before the fix where the change is a bug fix.
+- Write a test that fails before the fix where the change is a bug fix. Where the test guards a safeguard (a bound, a guard clause, a fallback), break the safeguard, see the test fail, and restore it: a test that passes either way guards nothing.
+- A change that makes an input return a value where it used to throw checks that value against an independent reference across the whole range the change opens up, not only at the reported input. Where it cannot be checked, it keeps the error, with a clear message.
 - When CI fails, read the failing job's log first, and fix the cause; do
   not rerun the whole suite locally to find it.
 
