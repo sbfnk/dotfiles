@@ -70,7 +70,12 @@ mkdir -p $HOME/.config
 [[ "$OS" == "Darwin" ]] && mkdir -p $HOME/Library/LaunchAgents
 typeset -a CODEX_GUIDANCE
 
-for dir in $CODE_DIR/dotfiles*; do
+# The repos to link from, named rather than globbed: a worktree such as
+# ~/code/dotfiles-some-branch matches dotfiles* and would take the links over
+# from the main checkout.
+DOTFILES_REPOS=($CODE_DIR/dotfiles $CODE_DIR/dotfiles_private)
+
+for dir in $DOTFILES_REPOS; do
   if [ -d $dir/config ]; then
     for file in $dir/config/*; do
       name="$(basename $file)"
@@ -425,10 +430,10 @@ fi
 
 # Link scripts to ~/.local/bin, from the public repo and from dotfiles_private
 # for anything that should not be published, and from the private sbfnk-bot
-# repo. Same dotfiles* glob the config loop uses, so a machine without the
-# private repos carries on regardless.
+# repo. Same repos the config loop uses; a machine without the private repos
+# carries on regardless.
 mkdir -p ~/.local/bin ~/.msmtpq
-for dir in $CODE_DIR/dotfiles*/bin $CODE_DIR/sbfnk-bot/bin; do
+for dir in ${^DOTFILES_REPOS}/bin $CODE_DIR/sbfnk-bot/bin; do
   [ -d "$dir" ] || continue
   for file in $dir/*; do
     [ -e "$file" ] || continue
@@ -442,7 +447,7 @@ done
 # on install, so an edit only reaches sessions after a version bump and this.
 if command -v claude >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
   installed_json=$HOME/.claude/plugins/installed_plugins.json
-  for mp in $CODE_DIR/dotfiles*/config/claude/plugins/.claude-plugin/marketplace.json(N); do
+  for mp in ${^DOTFILES_REPOS}/config/claude/plugins/.claude-plugin/marketplace.json(N); do
     mp_dir=${mp:h:h}
     mp_name=$(jq -r .name $mp)
     if ! claude plugin marketplace list 2>/dev/null | grep -qw -- "$mp_name"; then
