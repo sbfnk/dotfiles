@@ -27,12 +27,18 @@ keybindings:
     # repository. gh-pr-merge deletes the branch only on an immediate merge
     # without a merge queue; otherwise that is up to the repository's
     # "Automatically delete head branches" setting.
+    # After a merge into the base branch GitHub recomputes whether the other
+    # PRs can merge and reports UNKNOWN until then, so V waits that out
+    # before it decides.
     - key: V
       name: approve and merge, or auto-merge
       command: >
         gh-bg "{{.RepoName}}#{{.PrNumber}}: approve and merge" sh -c '
-        [ "$(gh pr view -R "$0" "$1" --json mergeable -q .mergeable)" = MERGEABLE ]
-        || { echo "not mergeable"; exit 1; };
+        for i in 1 2 3 4 5 6 7 8 9 10; do
+        state="$(gh pr view -R "$0" "$1" --json mergeable -q .mergeable)";
+        [ "$state" = UNKNOWN ] || break; sleep 3; done;
+        [ "$state" = MERGEABLE ]
+        || { echo "not mergeable ($state)"; exit 1; };
         gh pr review --approve -R "$0" "$1" &&
         gh-pr-merge "$0" "$1" --merge --auto'
         {{.RepoName}} {{.PrNumber}}
