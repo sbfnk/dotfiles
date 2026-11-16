@@ -18,6 +18,7 @@ return require("lazy").setup(
   "hrsh7th/cmp-nvim-lua",
   "hrsh7th/cmp-nvim-lsp",
   "hrsh7th/cmp-path",
+  "hrsh7th/cmp-nvim-lsp-signature-help",
   "junegunn/vim-easy-align",
   {
     "nvim-treesitter/nvim-treesitter",
@@ -66,12 +67,6 @@ return require("lazy").setup(
     config = function()
       require "plugins.luasnip"
     end,
-  },
-  {
-    "ray-x/lsp_signature.nvim",
-    config = function()
-      require "lsp_signature".setup()
-    end
   },
   {
     "lukas-reineke/indent-blankline.nvim",
