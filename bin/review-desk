@@ -14,6 +14,9 @@
 # does not retry in a tight loop. Close a tab with cmd+w: the tools take
 # Ctrl-C for themselves, and the loop starts them again.
 #
+# gh-dash waits for the 1Password app first: kitty and 1Password start
+# together at login, and op times out on an app that has only just launched.
+#
 # Usage:
 #   review-desk              the kitty config line that opens the tabs here,
 #                            or nothing on other machines (kitty's
@@ -35,6 +38,31 @@ tool_of() {
   esac
 }
 
+# Seconds the 1Password app needs after launch before op can reach it.
+OP_SETTLE=10
+
+# etime is [[dd-]hh:]mm:ss.
+seconds_up() {
+  local t d=0 h=0 m s
+  t=$(ps -o etime= -p "$1" | tr -d ' ') || return 1
+  [[ $t == *-* ]] && { d=${t%%-*}; t=${t#*-}; }
+  IFS=: read -r a b c <<<"$t"
+  if [[ -n $c ]]; then h=$a m=$b s=$c; else m=$a s=$b; fi
+  echo $(( 10#$d * 86400 + 10#$h * 3600 + 10#$m * 60 + 10#$s ))
+}
+
+wait_for_1password() {
+  local pid up said=
+  while :; do
+    pid=$(pgrep -x 1Password | head -n 1) || pid=
+    if [[ -n $pid ]] && up=$(seconds_up "$pid") && (( up >= OP_SETTLE )); then
+      return
+    fi
+    [[ -n $said ]] || { echo "Waiting for the 1Password app..."; said=1; }
+    sleep 1
+  done
+}
+
 # The profile is read as link.sh reads it: # comments and whitespace dropped.
 front_line() {
   sed -e 's/#.*//' -e 's/[[:space:]]//g' "$CONFIG/profile" 2>/dev/null \
@@ -48,6 +76,7 @@ run() {
   # signal, is reset in the tool, so the tool still stops while the loop lives.
   trap : INT
   while :; do
+    [[ $1 == prs ]] && wait_for_1password
     start=$SECONDS
     $tool || true
     if (( SECONDS - start < 10 )); then
