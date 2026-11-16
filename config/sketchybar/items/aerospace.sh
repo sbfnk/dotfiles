@@ -11,6 +11,9 @@ sketchybar --add event aerospace_workspace_change
 # Each display gets its own items, so its bar can highlight the workspace that
 # display shows rather than the one focused on another screen.
 DISPLAY_IDS=$(sketchybar --query displays | sed -n 's/.*"arrangement-id":\([0-9]*\).*/\1/p')
+# At login the query can answer before any display is known, which would leave
+# the bar with no workspaces until the next display change.
+[ -z "$DISPLAY_IDS" ] && DISPLAY_IDS=1
 
 for did in $DISPLAY_IDS; do
 for i in "${!WORKSPACE_IDS[@]}"; do
