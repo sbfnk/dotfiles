@@ -74,8 +74,9 @@ CLAUDE.md; the bot has it in every prompt.
 - Anything else a PR leaves for later, from a review or found along the
   way, is listed in the description under "Left for later" before the PR
   is marked ready. Interactive sessions also open an issue in the
-  repository for each item, assigned to sbfnk-bot, and link it from the
-  list. The bot cannot open issues, so sbfnk raises them from its list when
+  repository for each item, assigned to sbfnk-bot (or to sbfnk where the
+  bot does not work: sbfnk/sbfnk-bot itself, or a repository not on its
+  list), and link it from the list. The bot cannot open issues, so sbfnk raises them from its list when
   he approves the PR.
 - Follow the repository's PR and issue templates where they exist. No
   "Test plan" section.
