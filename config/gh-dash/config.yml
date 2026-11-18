@@ -58,6 +58,14 @@ keybindings:
     - key: K
       name: all comments, tables included
       command: GH_FORCE_TTY=100% gh pr view --comments -R {{.RepoName}} {{.PrNumber}} | less -R
+    # The issues the PR closes, as GitHub lists them under "Development".
+    - key: O
+      name: open linked issues in the browser
+      command: >
+        urls="$(gh pr view -R {{.RepoName}} {{.PrNumber}}
+        --json closingIssuesReferences -q '.closingIssuesReferences[].url')";
+        [ -n "$urls" ] || { echo "no linked issues" >&2; exit 1; };
+        echo "$urls" | xargs -n1 gh issue view --web
     - key: F
       name: re-run failed jobs
       command: >
