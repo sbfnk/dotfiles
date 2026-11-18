@@ -24,8 +24,8 @@ CLAUDE.md; the bot has it in every prompt.
 
 ## Issues
 
-- Two paragraphs: what is wrong or missing, and what should happen instead
-  or why it matters.
+- At most two paragraphs: what is wrong or missing, and what should happen
+  instead or why it matters. One is enough when it says both.
 - Add a minimal reproducible example whenever there is something to
   reproduce: the least code that shows the problem, with its output.
 
