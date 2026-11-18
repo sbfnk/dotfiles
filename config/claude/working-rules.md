@@ -72,11 +72,11 @@ CLAUDE.md; the bot has it in every prompt.
   "This PR partly addresses #N" and say what is left; #N stays open and
   assigned, and the work continues there.
 - Anything else a PR leaves for later, from a review or found along the
-  way, is raised before the PR is marked ready, and the description links
-  it. The bot raises it as an issue in `sbfnk/sbfnk-bot-inbox` titled
-  `owner/repo: what is left`, assigned to sbfnk-bot, which waits for
-  sbfnk's approval like any other inbox task. Interactive sessions open it
-  in the repository itself, assigned to sbfnk-bot.
+  way, is listed in the description under "Left for later" before the PR
+  is marked ready. Interactive sessions also open an issue in the
+  repository for each item, assigned to sbfnk-bot, and link it from the
+  list. The bot cannot open issues, so sbfnk raises them from its list when
+  he approves the PR.
 - Follow the repository's PR and issue templates where they exist. No
   "Test plan" section.
 - A pull request opens as a draft, with no reviewer. It stays a draft until
