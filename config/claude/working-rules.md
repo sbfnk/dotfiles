@@ -76,8 +76,8 @@ CLAUDE.md; the bot has it in every prompt.
   is marked ready. Interactive sessions also open an issue in the
   repository for each item, assigned to sbfnk-bot (or to sbfnk where the
   bot does not work: sbfnk/sbfnk-bot itself, or a repository not on its
-  list), and link it from the list. The bot cannot open issues, so sbfnk raises them from its list when
-  he approves the PR.
+  list), and link it from the list. The bot cannot open issues, so sbfnk
+  raises them from its list when he approves the PR.
 - Follow the repository's PR and issue templates where they exist. No
   "Test plan" section.
 - A pull request opens as a draft, with no reviewer. It stays a draft until
