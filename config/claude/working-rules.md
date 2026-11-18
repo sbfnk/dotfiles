@@ -28,6 +28,9 @@ CLAUDE.md; the bot has it in every prompt.
   instead or why it matters. One is enough when it says both.
 - Add a minimal reproducible example whenever there is something to
   reproduce: the least code that shows the problem, with its output.
+  An issue the bot opens from a pull request's "Left for later" list is
+  the exception: it links back to the pull request, and the failing test
+  written when the issue is taken up stands in for the example.
 
 ## Commits
 
