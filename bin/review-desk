@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # review-desk — the review tools kitty opens as tabs on the machines you review
-# from: gh-dash for the PRs waiting on your review, and the bot's activity as
-# it happens.
+# from: gh-dash for the PRs waiting on your review, the bot's activity as it
+# happens, and the board of its work waiting for your decision.
 #
 # A machine you review from is a desktop (the profile lists `desktop`) that
 # reaches the bot over ssh (~/.config/dotfiles/bot-host is set). kitty.conf
@@ -21,7 +21,7 @@
 #   review-desk              the kitty config line that opens the tabs here,
 #                            or nothing on other machines (kitty's
 #                            geninclude passes no arguments)
-#   review-desk run NAME     the loop one tab runs (prs or bot)
+#   review-desk run NAME     the loop one tab runs (prs, bot or board)
 set -euo pipefail
 
 CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
@@ -34,6 +34,7 @@ tool_of() {
   case "$1" in
     prs) echo "gh-me dash" ;;
     bot) echo "sbr watch" ;;
+    board) echo "sbr board" ;;
     *) return 1 ;;
   esac
 }
