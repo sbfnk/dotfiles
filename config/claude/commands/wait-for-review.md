@@ -241,6 +241,8 @@ When stopping, check whether the PR should be auto-merged:
 
 If both are true:
 
+- Raise what the PR leaves for later, as in the Step 1b handover, including
+  findings `/review-loop` left open at its round cap.
 - If the PR is a draft (`isDraft: true`), mark it ready: `gh pr ready <PR>`.
 - Queue the auto-merge: `gh pr merge <PR> --auto --delete-branch` (no merge-strategy flag — use the repo default).
 - `--auto` waits for required checks to pass before merging, so you don't need to verify CI yourself.
