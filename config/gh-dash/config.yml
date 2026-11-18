@@ -29,13 +29,16 @@ keybindings:
     # "Automatically delete head branches" setting.
     # After a merge into the base branch GitHub recomputes whether the other
     # PRs can merge and reports UNKNOWN until then, so V waits that out
-    # before it decides.
+    # before it decides. A merged PR stays UNKNOWN for good, and the list
+    # still shows it until the next refresh, so V checks for that first.
     - key: V
       name: approve and merge, or auto-merge
       command: >
         gh-bg "{{.RepoName}}#{{.PrNumber}}: approve and merge" sh -c '
         for i in 1 2 3 4 5 6 7 8 9 10; do
-        state="$(gh pr view -R "$0" "$1" --json mergeable -q .mergeable)";
+        state="$(gh pr view -R "$0" "$1" --json state,mergeable
+        -q "if .state == \"OPEN\" then .mergeable else .state end")";
+        [ "$state" = MERGED ] && { echo "already merged"; exit 0; };
         [ "$state" = UNKNOWN ] || break; sleep 3; done;
         [ "$state" = MERGEABLE ]
         || { echo "not mergeable ($state)"; exit 1; };
