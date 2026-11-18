@@ -65,9 +65,20 @@ CLAUDE.md; the bot has it in every prompt.
 
 ## Pull requests
 
-- The description is at most two paragraphs, through the humanizer like
-  all published prose.
-- Link the issue in the description ("This PR closes #N"), never in commits.
+- The description is at most two paragraphs, plus the "Left for later"
+  list below where there is one, through the humanizer like all published
+  prose.
+- Link the issue in the description, never in commits. Write "This PR
+  closes #N" only when the PR does everything #N asks. Otherwise write
+  "This PR partly addresses #N" and say what is left; #N stays open and
+  assigned, and the work continues there.
+- Anything else a PR leaves for later, from a review or found along the
+  way, is listed in the description under "Left for later" before the PR
+  is marked ready. Interactive sessions also open an issue in the
+  repository for each item, assigned to sbfnk-bot (or to sbfnk in
+  sbfnk/sbfnk-bot, whose own code the bot does not work on), and link it
+  from the list. The bot cannot open issues, so sbfnk raises them from the
+  "Left for later" list when he approves the PR.
 - Follow the repository's PR and issue templates where they exist. No
   "Test plan" section.
 - A pull request opens as a draft, with no reviewer. It stays a draft until
