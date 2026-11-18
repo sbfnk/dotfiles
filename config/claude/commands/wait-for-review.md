@@ -138,6 +138,7 @@ name the failing check in the summary):
 
 - Raise whatever the PR or its reviews leave for later (deferred work the
   description names, threads pushed back on as out of scope) as an issue,
+  except what is left of an issue the PR partly addresses, which stays there,
   as the working rules say, and link each one under "Left for later" in the
   PR description. Skip anything that list already links an issue for: the
   handover runs again on every green head.
