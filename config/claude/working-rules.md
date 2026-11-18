@@ -67,7 +67,14 @@ CLAUDE.md; the bot has it in every prompt.
 
 - The description is at most two paragraphs, through the humanizer like
   all published prose.
-- Link the issue in the description ("This PR closes #N"), never in commits.
+- Link the issue in the description, never in commits. Write "This PR
+  closes #N" only when the PR does everything #N asks. Otherwise write
+  "This PR partly addresses #N" and say what is left; #N stays open and
+  assigned, and the work continues there.
+- Anything else a PR leaves for later, from a review or found along the
+  way, is raised before the PR is marked ready: by the bot as a request for
+  a new issue, in interactive sessions as an issue assigned to sbfnk-bot.
+  The description links it.
 - Follow the repository's PR and issue templates where they exist. No
   "Test plan" section.
 - A pull request opens as a draft, with no reviewer. It stays a draft until
