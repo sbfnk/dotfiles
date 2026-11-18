@@ -65,8 +65,9 @@ CLAUDE.md; the bot has it in every prompt.
 
 ## Pull requests
 
-- The description is at most two paragraphs, through the humanizer like
-  all published prose.
+- The description is at most two paragraphs, plus the "Left for later"
+  list below where there is one, through the humanizer like all published
+  prose.
 - Link the issue in the description, never in commits. Write "This PR
   closes #N" only when the PR does everything #N asks. Otherwise write
   "This PR partly addresses #N" and say what is left; #N stays open and
