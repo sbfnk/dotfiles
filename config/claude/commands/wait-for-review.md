@@ -137,9 +137,10 @@ attempted on this head, does not hold the handover, so hand over anyway and
 name the failing check in the summary):
 
 - Raise whatever the PR or its reviews leave for later (deferred work the
-  description names, threads pushed back on as out of scope) as an issue
-  assigned to sbfnk-bot, as the working rules say, and link each one in the
-  PR description.
+  description names, threads pushed back on as out of scope) as an issue,
+  as the working rules say, and link each one under "Left for later" in the
+  PR description. Skip anything that list already links an issue for: the
+  handover runs again on every green head.
 - If `isDraft` is true, mark it ready: `gh pr ready <PR>`.
 - Request review from sbfnk (`gh pr edit <PR> --add-reviewer sbfnk`) unless
   sbfnk is already in `reviewRequests` or has reviewed the current head commit.
