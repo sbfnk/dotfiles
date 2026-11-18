@@ -75,11 +75,10 @@ CLAUDE.md; the bot has it in every prompt.
 - Anything else a PR leaves for later, from a review or found along the
   way, is listed in the description under "Left for later" before the PR
   is marked ready. Interactive sessions also open an issue in the
-  repository for each item, assigned to sbfnk-bot (or to sbfnk where the
-  bot does not work: sbfnk/sbfnk-bot itself, or a repository that
-  `config/repos` in sbfnk/sbfnk-bot lists neither by its owner nor as
-  `owner/repo`), and link it from the list. The bot cannot open issues, so sbfnk raises them
-  from the "Left for later" list when he approves the PR.
+  repository for each item, assigned to sbfnk-bot (or to sbfnk in
+  sbfnk/sbfnk-bot, whose own code the bot does not work on), and link it
+  from the list. The bot cannot open issues, so sbfnk raises them from the
+  "Left for later" list when he approves the PR.
 - Follow the repository's PR and issue templates where they exist. No
   "Test plan" section.
 - A pull request opens as a draft, with no reviewer. It stays a draft until
