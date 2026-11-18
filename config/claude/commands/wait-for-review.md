@@ -136,6 +136,10 @@ first as in Step 3b; a failure Step 3b leaves in place, out of scope or already
 attempted on this head, does not hold the handover, so hand over anyway and
 name the failing check in the summary):
 
+- Raise whatever the PR or its reviews leave for later (deferred work the
+  description names, threads pushed back on as out of scope) as an issue
+  assigned to sbfnk-bot, as the working rules say, and link each one in the
+  PR description.
 - If `isDraft` is true, mark it ready: `gh pr ready <PR>`.
 - Request review from sbfnk (`gh pr edit <PR> --add-reviewer sbfnk`) unless
   sbfnk is already in `reviewRequests` or has reviewed the current head commit.
