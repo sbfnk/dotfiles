@@ -24,8 +24,8 @@ CLAUDE.md; the bot has it in every prompt.
 
 ## Issues
 
-- Two paragraphs: what is wrong or missing, and what should happen instead
-  or why it matters.
+- At most two paragraphs: what is wrong or missing, and what should happen
+  instead or why it matters. One is enough when it says both.
 - Add a minimal reproducible example whenever there is something to
   reproduce: the least code that shows the problem, with its output.
 
@@ -77,8 +77,10 @@ CLAUDE.md; the bot has it in every prompt.
   is marked ready. Interactive sessions also open an issue in the
   repository for each item, assigned to sbfnk-bot (or to sbfnk in
   sbfnk/sbfnk-bot, whose own code the bot does not work on), and link it
-  from the list. The bot cannot open issues, so sbfnk raises them from the
-  "Left for later" list when he approves the PR.
+  from the list. The bot writes each item as "Title: what is wrong and why
+  it matters" and opens their issues itself when it publishes the PR or
+  updates its description; as the bot assigned them, each waits for
+  sbfnk's approval before work on it starts.
 - Follow the repository's PR and issue templates where they exist. No
   "Test plan" section.
 - A pull request opens as a draft, with no reviewer. It stays a draft until
