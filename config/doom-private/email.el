@@ -1601,22 +1601,26 @@ notmuch edit as new."
                                       '(In-Reply-To References))))
                   files (sf/notmuch-save-attachments
                          (make-temp-file "notmuch-edit-" t))))
-          (notmuch-mua-mail
-           (plist-get headers :To) (plist-get headers :Subject)
-           (append
-            ;; Someone else's From would send in their name.
-            (when (and from
-                       (member (downcase (cadr (mail-extract-address-components
-                                                from)))
-                               (mapcar #'downcase mine)))
-              (list (cons 'From from)))
-            (delq nil (mapcar (lambda (field)
-                                (when-let ((value (plist-get headers field)))
-                                  (cons (intern (substring (symbol-name field) 1))
-                                        value)))
-                              '(:Cc :Bcc)))
-            threading)
-           nil (notmuch-mua-get-switch-function))
+          ;; Without a subject, org-msg's advice on `notmuch-mua-mail' would
+          ;; set the buffer up as a new message before the body goes in.
+          (cl-letf (((symbol-function 'org-msg-post-setup--if-not-reply)
+                     #'ignore))
+            (notmuch-mua-mail
+             (plist-get headers :To) (plist-get headers :Subject)
+             (append
+              ;; Someone else's From would send in their name.
+              (when (and from
+                         (member (downcase (cadr (mail-extract-address-components
+                                                  from)))
+                                 (mapcar #'downcase mine)))
+                (list (cons 'From from)))
+              (delq nil (mapcar (lambda (field)
+                                  (when-let ((value (plist-get headers field)))
+                                    (cons (intern (substring (symbol-name field) 1))
+                                          value)))
+                                '(:Cc :Bcc)))
+              threading)
+             nil (notmuch-mua-get-switch-function)))
           (message-goto-body)
           (insert (org-msg-header nil (org-msg-get-alternatives 'new))
                   "\n" org "\n")
