@@ -1590,11 +1590,13 @@ notmuch edit as new."
               (notmuch--call-process notmuch-command nil t nil
                                      "show" "--format=raw" id))
             (setq threading
-                  (delq nil (mapcar (lambda (field)
-                                      (when-let ((value (message-fetch-field
-                                                         (symbol-name field))))
-                                        (cons field value)))
-                                    '(In-Reply-To References)))
+                  (save-restriction
+                    (message-narrow-to-headers-or-head)
+                    (delq nil (mapcar (lambda (field)
+                                        (when-let ((value (message-fetch-field
+                                                           (symbol-name field))))
+                                          (cons field value)))
+                                      '(In-Reply-To References))))
                   files (sf/notmuch-save-attachments
                          (make-temp-file "notmuch-edit-" t))))
           (notmuch-mua-mail
