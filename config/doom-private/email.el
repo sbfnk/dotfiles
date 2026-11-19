@@ -599,6 +599,7 @@ Return nil if it could not be started."
       (dolist (part parts)
         (let ((content-type (plist-get part :content-type)))
           (cond
+           ((equal (plist-get part :content-disposition) "attachment"))
            ((string= content-type "text/html")
             (throw 'found (plist-get part :content)))
            ((string-prefix-p "multipart/" content-type)
@@ -1541,7 +1542,112 @@ Plain-text messages go through the standard notmuch forward."
         (set-buffer-modified-p nil)
         (message-goto-to))))
 
-  (evil-define-key* 'normal notmuch-show-mode-map "cf" #'sf/notmuch-forward)
-  (evil-define-key* 'normal notmuch-tree-mode-map "cf" #'sf/notmuch-forward))
+  (defun sf/html-to-org (html)
+    "Convert HTML to org text with pandoc.
+org-msg exports with \\n:t, so the \\\\ line breaks pandoc writes for
+<br> are dropped, and cid: images, which point into the original
+message, go with them."
+    (with-temp-buffer
+      (insert (replace-regexp-in-string
+               "<img[^>]*src=[\"']?cid:[^>]*>" "" html))
+      ;; pandoc warns on stderr even when it succeeds, so keep that out of
+      ;; the body and show it only on failure.
+      (let ((stderr (make-temp-file "pandoc-stderr-")))
+        (unwind-protect
+            (unless (zerop (call-process-region
+                            (point-min) (point-max) "pandoc" t
+                            (list t stderr) nil
+                            "-f" "html-native_divs-native_spans-raw_html"
+                            "-t" "org" "--wrap=none"))
+              (user-error "pandoc failed: %s"
+                          (with-temp-buffer
+                            (insert-file-contents stderr)
+                            (string-trim (buffer-string)))))
+          (delete-file stderr)))
+      (goto-char (point-min))
+      (while (re-search-forward "\\\\\\\\$" nil t)
+        (replace-match ""))
+      (goto-char (point-min))
+      ;; A link that only wrapped a cid: image, such as a signature logo.
+      (while (re-search-forward "\\[\\[[^]]*\\]\\[\\]\\]" nil t)
+        (replace-match ""))
+      (string-trim (buffer-string))))
+
+  (defun sf/notmuch-edit-as-new ()
+    "Edit the current message as a new one, in org-msg when it has HTML.
+Drafts are resumed, and plain-text messages go through the standard
+notmuch edit as new."
+    (interactive)
+    (let* ((id (if (derived-mode-p 'notmuch-tree-mode)
+                   (notmuch-tree-get-message-id)
+                 (notmuch-show-get-message-id)))
+           (draft (member "draft" (notmuch--process-lines
+                                   notmuch-command "search" "--output=tags"
+                                   "--exclude=false" id)))
+           (msg (sf/notmuch-find-message-plist
+                 (notmuch-call-notmuch-sexp "show" "--format=sexp"
+                                            "--include-html" "--exclude=false"
+                                            "--entire-thread=false" id)))
+           (html (sf/notmuch-find-html-part (plist-get msg :body))))
+      (if (or draft (not html) (not org-msg-mode))
+          (cl-letf (((symbol-function 'yes-or-no-p) #'always))
+            (notmuch-draft-resume id))
+        (let* ((headers (plist-get msg :headers))
+               (mine (notmuch-user-emails))
+               (from (plist-get headers :From))
+               (org (sf/html-to-org html))
+               threading files)
+          (with-temp-buffer
+            (let ((coding-system-for-read 'no-conversion))
+              (notmuch--call-process notmuch-command nil t nil
+                                     "show" "--format=raw" id))
+            (setq threading
+                  (save-restriction
+                    (message-narrow-to-headers-or-head)
+                    (delq nil (mapcar (lambda (field)
+                                        (when-let ((value (message-fetch-field
+                                                           (symbol-name field))))
+                                          (cons field value)))
+                                      '(In-Reply-To References))))
+                  files (sf/notmuch-save-attachments
+                         (make-temp-file "notmuch-edit-" t))))
+          ;; Without a subject, org-msg's advice on `notmuch-mua-mail' would
+          ;; set the buffer up as a new message before the body goes in.
+          (cl-letf (((symbol-function 'org-msg-post-setup--if-not-reply)
+                     #'ignore))
+            (notmuch-mua-mail
+             (plist-get headers :To) (plist-get headers :Subject)
+             (append
+              ;; Someone else's From would send in their name.
+              (when (and from
+                         (member (downcase (cadr (mail-extract-address-components
+                                                  from)))
+                                 (mapcar #'downcase mine)))
+                (list (cons 'From from)))
+              (delq nil (mapcar (lambda (field)
+                                  (when-let ((value (plist-get headers field)))
+                                    (cons (intern (substring (symbol-name field) 1))
+                                          value)))
+                                '(:Cc :Bcc)))
+              threading)
+             nil (notmuch-mua-get-switch-function)))
+          (message-goto-body)
+          (insert (org-msg-header nil (org-msg-get-alternatives 'new))
+                  "\n" org "\n")
+          (let ((address user-mail-address))
+            (org-msg-edit-mode)
+            (setq-local user-mail-address address))
+          ;; `org-msg-attach-attach' prepends.
+          (dolist (file (reverse files))
+            (org-msg-attach-attach file))
+          (org-msg-goto-body)
+          (set-buffer-modified-p nil)))))
+
+  (evil-define-key* 'normal notmuch-show-mode-map
+    "cf" #'sf/notmuch-forward
+    "ce" #'sf/notmuch-edit-as-new)
+  (evil-define-key* 'normal notmuch-tree-mode-map
+    "cf" #'sf/notmuch-forward
+    "ce" #'sf/notmuch-edit-as-new))
 
 ;;; email.el ends here
