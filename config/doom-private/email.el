@@ -1550,11 +1550,20 @@ message, go with them."
     (with-temp-buffer
       (insert (replace-regexp-in-string
                "<img[^>]*src=[\"']?cid:[^>]*>" "" html))
-      (unless (zerop (call-process-region
-                      (point-min) (point-max) "pandoc" t t nil
-                      "-f" "html-native_divs-native_spans-raw_html"
-                      "-t" "org" "--wrap=none"))
-        (user-error "pandoc failed: %s" (buffer-string)))
+      ;; pandoc warns on stderr even when it succeeds, so keep that out of
+      ;; the body and show it only on failure.
+      (let ((stderr (make-temp-file "pandoc-stderr-")))
+        (unwind-protect
+            (unless (zerop (call-process-region
+                            (point-min) (point-max) "pandoc" t
+                            (list t stderr) nil
+                            "-f" "html-native_divs-native_spans-raw_html"
+                            "-t" "org" "--wrap=none"))
+              (user-error "pandoc failed: %s"
+                          (with-temp-buffer
+                            (insert-file-contents stderr)
+                            (string-trim (buffer-string)))))
+          (delete-file stderr)))
       (goto-char (point-min))
       (while (re-search-forward "\\\\\\\\$" nil t)
         (replace-match ""))
