@@ -1547,7 +1547,8 @@ org-msg exports with \\n:t, so the \\\\ line breaks pandoc writes for
 <br> are dropped, and cid: images, which point into the original
 message, go with them."
     (with-temp-buffer
-      (insert html)
+      (insert (replace-regexp-in-string
+               "<img[^>]*src=[\"']?cid:[^>]*>" "" html))
       (unless (zerop (call-process-region
                       (point-min) (point-max) "pandoc" t t nil
                       "-f" "html-native_divs-native_spans-raw_html"
@@ -1557,7 +1558,8 @@ message, go with them."
       (while (re-search-forward "\\\\\\\\$" nil t)
         (replace-match ""))
       (goto-char (point-min))
-      (while (re-search-forward "\\[\\[cid:[^]]*\\]\\(\\[[^]]*\\]\\)?\\]" nil t)
+      ;; A link that only wrapped a cid: image, such as a signature logo.
+      (while (re-search-forward "\\[\\[[^]]*\\]\\[\\]\\]" nil t)
         (replace-match ""))
       (string-trim (buffer-string))))
 
