@@ -599,6 +599,7 @@ Return nil if it could not be started."
       (dolist (part parts)
         (let ((content-type (plist-get part :content-type)))
           (cond
+           ((equal (plist-get part :content-disposition) "attachment"))
            ((string= content-type "text/html")
             (throw 'found (plist-get part :content)))
            ((string-prefix-p "multipart/" content-type)
