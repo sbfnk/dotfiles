@@ -74,6 +74,10 @@ typeset -a CODEX_GUIDANCE
 # ~/code/dotfiles-some-branch matches dotfiles* and would take the links over
 # from the main checkout.
 DOTFILES_REPOS=($CODE_DIR/dotfiles $CODE_DIR/dotfiles_private)
+# Where the scripts linked into ~/.local/bin come from: the public repo,
+# dotfiles_private for anything that should not be published, and the private
+# sbfnk-bot repo.
+SCRIPT_DIRS=(${^DOTFILES_REPOS}/bin $CODE_DIR/sbfnk-bot/bin)
 
 for dir in $DOTFILES_REPOS; do
   if [ -d $dir/config ]; then
@@ -370,10 +374,13 @@ if [[ "$OS" == "Darwin" ]]; then
     # An agent whose program exists in no repo here, such as one run from
     # dotfiles_private on a machine without that clone, would fail to exec at
     # every start with nothing in its log. Scripts are linked into
-    # ~/.local/bin further down, so look for them in the repos' bin folders.
-    program=$(sed -e "s|__HOME__|$HOME|g" -e "s|__BREW__|$BREW_PREFIX|g" "$file" \
-      | plutil -extract ProgramArguments.0 raw -o - - 2>/dev/null)
-    sources=(${^DOTFILES_REPOS}/bin/${program:t}(N))
+    # ~/.local/bin further down, so look for them where they are linked from.
+    # Plists can't expand $HOME at runtime, so we substitute it (and the
+    # Homebrew prefix, which differs between Apple Silicon and Intel) at
+    # install time.
+    rendered="$(sed -e "s|__HOME__|$HOME|g" -e "s|__BREW__|$BREW_PREFIX|g" "$file")"
+    program=$(print -r -- "$rendered" | plutil -extract ProgramArguments.0 raw -o - - 2>/dev/null)
+    sources=(${^SCRIPT_DIRS}/${program:t}(N))
     if [[ -n "$program" && ! -x "$program" ]] && (( ${#sources} == 0 )); then
       echo "Skipped $base ($program not found)"
       continue
@@ -381,12 +388,9 @@ if [[ "$OS" == "Darwin" ]]; then
     dest=$HOME/Library/LaunchAgents/$base
     label=${base%.plist}
     installed_agents+=($label)
-    # Plists can't expand $HOME at runtime, so we substitute it (and the
-    # Homebrew prefix, which differs between Apple Silicon and Intel) at
-    # install time. Remove any legacy symlink first to avoid writing through it
-    # back into the repo.
+    # Remove any legacy symlink first to avoid writing through it back into
+    # the repo.
     [ -L "$dest" ] && rm "$dest"
-    rendered="$(sed -e "s|__HOME__|$HOME|g" -e "s|__BREW__|$BREW_PREFIX|g" "$file")"
     if [[ -f "$dest" && "$(<$dest)" == "$rendered" ]] \
       && launchctl print "$domain/$label" >/dev/null 2>&1; then
       continue
@@ -439,12 +443,10 @@ if [[ "$OS" == "Linux" ]] && command -v systemctl >/dev/null 2>&1; then
     echo "Enabled claude-memory-union.timer"
 fi
 
-# Link scripts to ~/.local/bin, from the public repo and from dotfiles_private
-# for anything that should not be published, and from the private sbfnk-bot
-# repo. Same repos the config loop uses; a machine without the private repos
-# carries on regardless.
+# Link scripts to ~/.local/bin from SCRIPT_DIRS. A machine without the private
+# repos carries on regardless.
 mkdir -p ~/.local/bin ~/.msmtpq
-for dir in ${^DOTFILES_REPOS}/bin $CODE_DIR/sbfnk-bot/bin; do
+for dir in $SCRIPT_DIRS; do
   [ -d "$dir" ] || continue
   for file in $dir/*; do
     [ -e "$file" ] || continue
