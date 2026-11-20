@@ -24,12 +24,28 @@ log() { echo "$(date '+%F %T') $*"; }
 
 mkdir -p "$DROP"
 
-# WatchPaths fires once per iCloud write, often several in a burst. A run
-# takes seconds, so a lock older than ten minutes was left by a killed run.
+# WatchPaths fires once per iCloud write, often several in a burst. The lock
+# is a directory holding its owner's PID in "pid", and counts as stale only
+# when that process is gone, so a long-running holder is never overtaken.
+# A lock with no PID yet is being set up; one still without after a minute
+# was left by a run killed in between.
 LOCK="${TMPDIR:-/tmp}/phone-inbox.lock"
-find "$LOCK" -maxdepth 0 -mmin +10 -exec rmdir {} \; 2>/dev/null
+release() {
+  [ "$(cat "$LOCK/pid" 2>/dev/null)" = "$1" ] || return 0
+  rm -f "$LOCK/pid"
+  rmdir "$LOCK" 2>/dev/null
+}
+if [ -d "$LOCK" ]; then
+  holder=$(cat "$LOCK/pid" 2>/dev/null)
+  if [ -n "$holder" ]; then
+    kill -0 "$holder" 2>/dev/null || release "$holder"
+  elif [ -n "$(find "$LOCK" -maxdepth 0 -mmin +1)" ]; then
+    rmdir "$LOCK" 2>/dev/null
+  fi
+fi
 mkdir "$LOCK" 2>/dev/null || exit 0
-trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+echo $$ > "$LOCK/pid"
+trap 'release $$' EXIT
 
 # Notes iCloud has not downloaded yet show up as .name.txt.icloud; ask for
 # them now and pick them up on the run their arrival triggers.
