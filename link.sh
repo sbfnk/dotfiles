@@ -339,9 +339,9 @@ fi
 
 # Link scripts to ~/.local/bin, from the public repo and from dotfiles_private
 # for anything that should not be published, and from the private sbfnk-bot
-# repo. Same repos the config loop uses; a machine without the private repos
-# carries on regardless. This comes before the agents, which run these scripts
-# and start as soon as they are loaded.
+# repo. A machine without the private repos carries on regardless. This comes
+# before the agents, which run these scripts and start as soon as they are
+# loaded.
 mkdir -p ~/.local/bin ~/.msmtpq
 for dir in ${^DOTFILES_REPOS}/bin $CODE_DIR/sbfnk-bot/bin; do
   [ -d "$dir" ] || continue
