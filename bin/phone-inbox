@@ -24,11 +24,8 @@ log() { echo "$(date '+%F %T') $*"; }
 
 mkdir -p "$DROP"
 
-# WatchPaths fires once per iCloud write, often several in a burst. The lock
-# is a directory holding its owner's PID in "pid", and counts as stale only
-# when that process is gone, so a long-running holder is never overtaken.
-# A lock with no PID yet is being set up; one still without after a minute
-# was left by a run killed in between.
+# The lock directory holds its owner's PID; it is stale when that process is
+# gone, or when it has had no PID for a minute (killed between mkdir and echo).
 LOCK="${TMPDIR:-/tmp}/phone-inbox.lock"
 release() {
   [ "$(cat "$LOCK/pid" 2>/dev/null)" = "$1" ] || return 0
