@@ -154,6 +154,7 @@ cd ~/code/dotfiles_private && git pull  # if using private configs
   Linux). It never merges or commits: a repo on another branch is skipped, and
   one that has diverged or has local edits in the way raises a nudge. Logs:
   `~/.log/repo-sync.log`, and `~/.log/repo-sync-link.log` for the relink.
+- **morning triage** - `org-triage` (in `dotfiles_private/bin`) runs Claude once a day, on the first half-hourly start after 06:00, so a closed lid only delays it. It turns flagged mail into dated TODOs in the right org-roam node and unflags it, and refiles the meeting inbox and the phone notes. What it did goes to `~/org-roam/triage-log.org` (two weeks kept), and each run is one commit in `~/org-roam`. `org-triage --dry-run` shows what it would do. Runs from `launchagents/none.orgroam.triage.plist`. Log: `~/.log/org-triage.log`.
 - **nudges** - `bin/nudge` collects the standing conditions a machine wants you
   to know about: a stalled sync, an overdue Claude memory backup, a pending
   restart (`/var/run/reboot-required` on Linux, macOS's own pending-update list),
