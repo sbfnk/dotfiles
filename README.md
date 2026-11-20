@@ -8,7 +8,7 @@ Configuration files for macOS and Linux.
 root/          → symlinked to ~/.<filename> (zshrc, tmux.conf, etc.)
 config/        → symlinked to ~/.config/<dirname> (doom, kitty, alfred, etc.)
 bin/           → symlinked to ~/.local/bin/
-launchagents/  → written to ~/Library/LaunchAgents/ and loaded (macOS only)
+launchagents/  → written to ~/Library/LaunchAgents/ and loaded (macOS only), from dotfiles_private too
 docs/          → reference material (profiles, mail setup, slide style)
 .githooks/     → gitleaks pre-commit hook (activated by install.sh)
 ```
