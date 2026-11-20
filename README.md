@@ -160,7 +160,7 @@ cd ~/code/dotfiles_private && git pull  # if using private configs
   starting it with `TODO` makes a task; a filename starting `YYYY-MM-DD HHmm`
   sets the timestamp. Runs from `launchagents/none.orgroam.phone-inbox.plist`
   whenever the folder changes. Log: `~/.log/phone-inbox.log`.
-- **morning triage** - `org-triage` (in `dotfiles_private/bin`) runs Claude once a day, on the first half-hourly start after 06:00, so a closed lid only delays it. It turns flagged mail into dated TODOs in the right org-roam node and unflags it, and refiles the meeting inbox and the phone notes. What it did goes to `~/org-roam/triage-log.org` (two weeks kept), and each run is one commit in `~/org-roam`. `org-triage --dry-run` shows what it would do. Runs from `launchagents/none.orgroam.triage.plist`. Log: `~/.log/org-triage.log`.
+- **morning triage** - `org-triage` (in `dotfiles_private/bin`) runs Claude once a day, on the first half-hourly start after 06:00, so a closed lid only delays it. It turns flagged mail into dated TODOs in the right org-roam node and unflags it, refiles the meeting inbox and the phone notes, and adds a SCHEDULED date to any open TODO in an active file that has none, hand-written ones included. What it did goes to `~/org-roam/triage-log.org` (two weeks kept), with the commit range the run spans in `~/org-roam` for `git diff`. `org-triage --dry-run` shows what it would do. Runs from `launchagents/none.orgroam.triage.plist`. Log: `~/.log/org-triage.log`.
 - **nudges** - `bin/nudge` collects the standing conditions a machine wants you
   to know about: a stalled sync, an overdue Claude memory backup, a pending
   restart (`/var/run/reboot-required` on Linux, macOS's own pending-update list),
