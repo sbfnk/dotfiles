@@ -74,10 +74,6 @@ typeset -a CODEX_GUIDANCE
 # ~/code/dotfiles-some-branch matches dotfiles* and would take the links over
 # from the main checkout.
 DOTFILES_REPOS=($CODE_DIR/dotfiles $CODE_DIR/dotfiles_private)
-# Where the scripts linked into ~/.local/bin come from: the public repo,
-# dotfiles_private for anything that should not be published, and the private
-# sbfnk-bot repo.
-SCRIPT_DIRS=(${^DOTFILES_REPOS}/bin $CODE_DIR/sbfnk-bot/bin)
 
 for dir in $DOTFILES_REPOS; do
   if [ -d $dir/config ]; then
@@ -341,6 +337,21 @@ if [ -e "$HOME/.codex/hooks.json" ]; then
   echo "Enabled Codex lifecycle hooks"
 fi
 
+# Link scripts to ~/.local/bin, from the public repo and from dotfiles_private
+# for anything that should not be published, and from the private sbfnk-bot
+# repo. Same repos the config loop uses; a machine without the private repos
+# carries on regardless. This comes before the agents, which run these scripts
+# and start as soon as they are loaded.
+mkdir -p ~/.local/bin ~/.msmtpq
+for dir in ${^DOTFILES_REPOS}/bin $CODE_DIR/sbfnk-bot/bin; do
+  [ -d "$dir" ] || continue
+  for file in $dir/*; do
+    [ -e "$file" ] || continue
+    ln $LN_FLAG $file ~/.local/bin/
+    echo "Linked $file → ~/.local/bin/$(basename $file)"
+  done
+done
+
 # Agents owned by a group, keyed on the filename prefix. Anything unlisted runs
 # everywhere. Without this the macOS side ignored groups entirely and installed
 # the mail agents on machines that link no mail config, leaving daemons running
@@ -371,17 +382,15 @@ if [[ "$OS" == "Darwin" ]]; then
       echo "Skipped $base (no '$owner' group)"
       continue
     fi
-    # An agent whose program exists in no repo here, such as one run from
-    # dotfiles_private on a machine without that clone, would fail to exec at
-    # every start with nothing in its log. Scripts are linked into
-    # ~/.local/bin further down, so look for them where they are linked from.
     # Plists can't expand $HOME at runtime, so we substitute it (and the
     # Homebrew prefix, which differs between Apple Silicon and Intel) at
     # install time.
     rendered="$(sed -e "s|__HOME__|$HOME|g" -e "s|__BREW__|$BREW_PREFIX|g" "$file")"
+    # An agent whose program is missing, such as one run from dotfiles_private
+    # on a machine without that clone, would fail to exec at every start with
+    # nothing in its log.
     program=$(print -r -- "$rendered" | plutil -extract ProgramArguments.0 raw -o - - 2>/dev/null)
-    sources=(${^SCRIPT_DIRS}/${program:t}(N))
-    if [[ -n "$program" && ! -x "$program" ]] && (( ${#sources} == 0 )); then
+    if [[ -n "$program" && ! -x "$program" ]]; then
       echo "Skipped $base ($program not found)"
       continue
     fi
@@ -442,18 +451,6 @@ if [[ "$OS" == "Linux" ]] && command -v systemctl >/dev/null 2>&1; then
   systemctl --user enable --now claude-memory-union.timer 2>/dev/null && \
     echo "Enabled claude-memory-union.timer"
 fi
-
-# Link scripts to ~/.local/bin from SCRIPT_DIRS. A machine without the private
-# repos carries on regardless.
-mkdir -p ~/.local/bin ~/.msmtpq
-for dir in $SCRIPT_DIRS; do
-  [ -d "$dir" ] || continue
-  for file in $dir/*; do
-    [ -e "$file" ] || continue
-    ln $LN_FLAG $file ~/.local/bin/
-    echo "Linked $file → ~/.local/bin/$(basename $file)"
-  done
-done
 
 # Claude Code plugins from the local marketplaces: install what is missing and
 # update what the marketplace has bumped. Plugins are copied into Claude's cache
