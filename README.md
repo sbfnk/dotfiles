@@ -87,7 +87,9 @@ overlay first:
   `~/.mbsyncrc`, `~/.msmtprc`, `~/.config/doom-private/email-accounts.el`,
   and one `~/Library/LaunchAgents/none.mail.<account>.plist` per account
   (polls inbox every 15 min via `getmail.sh`, as a backstop for the IMAP IDLE
-  agent).
+  agent). The IMAP IDLE agent runs `goimapnotify` from the user's local bin
+  directory. Nothing in this repository installs it, so put the binary there
+  by hand; without it, `link.sh` skips the agent.
 - `config/doom-private/signatures.el` — `(setq sf/email-signatures '(("name"
   . "body") ...))`. Loaded with no-error by `email.el`.
 - launchagents: keep the `__HOME__` placeholder in the plist source. `link.sh`
