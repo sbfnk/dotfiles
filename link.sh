@@ -367,6 +367,17 @@ if [[ "$OS" == "Darwin" ]]; then
       echo "Skipped $base (no '$owner' group)"
       continue
     fi
+    # An agent whose program exists in no repo here, such as one run from
+    # dotfiles_private on a machine without that clone, would fail to exec at
+    # every start with nothing in its log. Scripts are linked into
+    # ~/.local/bin further down, so look for them in the repos' bin folders.
+    program=$(sed -e "s|__HOME__|$HOME|g" -e "s|__BREW__|$BREW_PREFIX|g" "$file" \
+      | plutil -extract ProgramArguments.0 raw -o - - 2>/dev/null)
+    sources=(${^DOTFILES_REPOS}/bin/${program:t}(N))
+    if [[ -n "$program" && ! -x "$program" ]] && (( ${#sources} == 0 )); then
+      echo "Skipped $base ($program not found)"
+      continue
+    fi
     dest=$HOME/Library/LaunchAgents/$base
     label=${base%.plist}
     installed_agents+=($label)
