@@ -94,8 +94,10 @@ overlay first:
   substitutes `$HOME` at install time, writes real files to
   `~/Library/LaunchAgents/`, and loads any agent that changed or is not
   running. It records what it installed in
-  `~/.local/state/dotfiles/launchagents`, so an agent deleted from the repo, or
-  whose group the machine dropped, is unloaded and removed on the next run.
+  `~/.local/state/dotfiles/launchagents`, so an agent deleted from the repo,
+  whose group the machine dropped, or whose program is missing (a script from
+  a private repo the machine has not cloned, a Homebrew tool not installed) is
+  unloaded and removed on the next run.
   The same run installs or updates the Claude Code plugins in
   `config/claude/plugins`; a plugin edit reaches sessions after a version bump.
 
@@ -154,6 +156,7 @@ cd ~/code/dotfiles_private && git pull  # if using private configs
   Linux). It never merges or commits: a repo on another branch is skipped, and
   one that has diverged or has local edits in the way raises a nudge. Logs:
   `~/.log/repo-sync.log`, and `~/.log/repo-sync-link.log` for the relink.
+- **morning triage** - `org-triage` (in `dotfiles_private/bin`) runs Claude once a day, on the first half-hourly start after 06:00, so a closed lid only delays it. It turns flagged mail into dated TODOs in the right org-roam node and unflags it, refiles the meeting inbox and the phone notes, and adds a SCHEDULED date to any open TODO in an active file that has none, hand-written ones included. What it did goes to `~/org-roam/triage-log.org` (two weeks kept), with the commit range the run spans in `~/org-roam` for `git diff`. `org-triage --dry-run` changes no notes and no mail, and writes what it would do to the triage log. Runs from `launchagents/none.orgroam.triage.plist`. Log: `~/.log/org-triage.log`.
 - **nudges** - `bin/nudge` collects the standing conditions a machine wants you
   to know about: a stalled sync, an overdue Claude memory backup, a pending
   restart (`/var/run/reboot-required` on Linux, macOS's own pending-update list),
