@@ -375,7 +375,9 @@ if [[ "$OS" == "Darwin" ]]; then
   BREW_PREFIX="${HOMEBREW_PREFIX:-$([[ -d /opt/homebrew ]] && echo /opt/homebrew || echo /usr/local)}"
   domain="gui/$(id -u)"
   typeset -a installed_agents
-  for file in $CODE_DIR/dotfiles/launchagents/*; do
+  # Agents come from both repos, so one that runs a private script can stay
+  # out of the public one.
+  for file in ${^DOTFILES_REPOS}/launchagents/*(N); do
     base=$(basename $file)
     owner="${AGENT_GROUP[${(j:.:)${(s:.:)base}[1,2]}]:-}"
     if [[ -n "$owner" ]] && (( ! ${GROUPS[(Ie)$owner]} )); then
