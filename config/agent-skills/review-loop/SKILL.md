@@ -68,10 +68,11 @@ older repo may still carry a full spec, method and all, in its own
 `.github/REVIEW.md`; that is fine — the org half just repeats what is already
 there.)
 
-**Only if neither half exists** — the `<owner>/.github` `REVIEW.md` 404s *and*
-none of the three repo locations has one — say so and stop. Offer to write the
-org spec (the socialmixr history is a reasonable model). A review with no agreed
-bar at all produces exactly the nit-generation this design exists to avoid.
+**If neither half exists** — the `<owner>/.github` `REVIEW.md` 404s *and*
+none of the three repo locations has one — use `sbfnk/.github`'s `REVIEW.md` as
+the org half and say so in the summary. Only if that also 404s, say so and stop.
+A review with no agreed bar at all produces exactly the nit-generation this
+design exists to avoid.
 
 ## The loop
 
@@ -115,8 +116,10 @@ Repeat until a round comes back clean or you hit the cap:
    them is the whole reason the app exists.
 
    `gh-review-bot-token` exits 2 when the app is not installed on the repo. Then
-   fall back to the authenticated account and say so in the summary — a silent
-   fallback looks identical to the app having worked.
+   post nothing: keep the findings in the session, fix or push back on them
+   locally, push only the fix commits, and list every finding with its outcome
+   in the summary. There is no `bot-review` check either, so a clean full pass
+   is what hands the PR to the human.
 
    Post them even when you intend to fix them immediately. The comment is what
    lets a human see what was caught, judge whether the fix was right, and
