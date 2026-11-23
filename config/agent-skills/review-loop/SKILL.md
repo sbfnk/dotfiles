@@ -96,11 +96,12 @@ Repeat until a round comes back clean or you hit the cap:
 
 3. **Post every finding** as an inline comment on the line it concerns, before
    fixing anything. Post them as **`sbfnk-review-bot[bot]`**, not as the account
-   you are authenticated as. Mint the token in its own step, so its exit status
-   (below) reaches you:
+   you are authenticated as. Mint the token in its own statement, so its exit
+   status (below) reaches you, and in the same shell command as `gh`, since a
+   variable does not survive into a later command:
 
        token=$(gh-review-bot-token <owner>/<repo>) || exit $?
-       GITHUB_TOKEN=$token gh api \
+       GITHUB_TOKEN=${token:?} gh api \
          repos/{owner}/{repo}/pulls/<PR>/comments \
          -f body="..." -f commit_id="<head sha>" -f path="..." -F line=N -f side=RIGHT
 
@@ -243,7 +244,7 @@ the passing state is just the absence of a problem.
 Publish:
 
     token=$(gh-review-bot-token <owner>/<repo>) || exit $?
-    GITHUB_TOKEN=$token gh api \
+    GITHUB_TOKEN=${token:?} gh api \
       repos/{owner}/{repo}/check-runs -X POST \
       -f name=bot-review -f head_sha="<head sha>" \
       -f status=completed -f conclusion=failure \

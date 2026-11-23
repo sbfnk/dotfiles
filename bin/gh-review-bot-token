@@ -9,11 +9,13 @@
 #
 # Usage:
 #   token=$(gh-review-bot-token <owner>/<repo>) || exit $?
-#   GITHUB_TOKEN=$token gh api ...
+#   GITHUB_TOKEN=${token:?} gh api ...
 #
-# Mint the token in its own step: in a prefix such as
-# `GITHUB_TOKEN=$(gh-review-bot-token ...) gh api`, the exit status is lost and
-# gh falls back to the stored login with an empty token.
+# Mint the token in its own statement, in the same shell command as gh. In a
+# prefix such as `GITHUB_TOKEN=$(gh-review-bot-token ...) gh api` the exit
+# status is lost, and a token set in an earlier command is gone; either way gh
+# would fall back to the stored login with an empty token, which ${token:?}
+# refuses.
 #
 # Exits 2 if the app is not installed on the repo. Callers then post no review
 # comments under either account and keep the findings local (see the
