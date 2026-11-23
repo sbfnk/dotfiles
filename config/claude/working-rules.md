@@ -70,7 +70,11 @@ CLAUDE.md; the bot has it in every prompt.
 
 - The description is at most two paragraphs, plus the "Left for later"
   list below where there is one, through the humanizer like all published
-  prose.
+  prose. In a repository without the review app, /review-loop also keeps
+  an "Open review findings" list there for the review findings it did not
+  fix and that are not "Left for later" items: ones it disagrees with or
+  leaves for sbfnk to decide, and deferred ones that fall short of the bar
+  below. They get no issue.
 - Link the issue in the description, never in commits. Write "This PR
   closes #N" only when the PR does everything #N asks. Otherwise write
   "This PR partly addresses #N" and say what is left; #N stays open and

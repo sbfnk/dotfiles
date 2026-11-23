@@ -22,7 +22,8 @@
 # Usage:
 #   gh-review-post <owner>/<repo> <pr> --findings <file.json>
 #
-# Exits 2 if the app is not installed, 4 if no review round is open on the head.
+# Exits 2 if the app is not installed, 1 if the token could not be minted, 4 if
+# no review round is open on the head.
 set -euo pipefail
 
 if [[ $# -ne 4 || $1 != */* || $3 != --findings ]]; then
@@ -55,7 +56,7 @@ payload=$(jq --arg sha "$head_sha" \
   '{commit_id: $sha, event: "COMMENT", body: (.body // ""), comments: .comments}' \
   "$findings")
 
-token=$(gh-review-bot-token "$repo") || exit 2
+token=$(gh-review-bot-token "$repo") || exit $?
 GITHUB_TOKEN=$token gh api --method POST "repos/$repo/pulls/$pr/reviews" \
   --input - \
   --jq '"posted review \(.id) carrying \(.body | length) chars of body"' <<<"$payload"

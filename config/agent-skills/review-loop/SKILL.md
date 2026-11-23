@@ -68,10 +68,12 @@ older repo may still carry a full spec, method and all, in its own
 `.github/REVIEW.md`; that is fine — the org half just repeats what is already
 there.)
 
-**Only if neither half exists** — the `<owner>/.github` `REVIEW.md` 404s *and*
-none of the three repo locations has one — say so and stop. Offer to write the
-org spec (the socialmixr history is a reasonable model). A review with no agreed
-bar at all produces exactly the nit-generation this design exists to avoid.
+**If the owner has no org half** — the `<owner>/.github` `REVIEW.md` 404s —
+use `sbfnk/.github`'s `REVIEW.md` as the org half, alongside any repo half, and
+say so in the summary. Only if that also 404s and no repo half exists, say so
+and stop.
+A review with no agreed bar at all produces exactly the nit-generation this
+design exists to avoid.
 
 ## The loop
 
@@ -94,9 +96,12 @@ Repeat until a round comes back clean or you hit the cap:
 
 3. **Post every finding** as an inline comment on the line it concerns, before
    fixing anything. Post them as **`sbfnk-review-bot[bot]`**, not as the account
-   you are authenticated as:
+   you are authenticated as. Mint the token in its own statement, so its exit
+   status (below) reaches you, and in the same shell command as `gh`, since a
+   variable does not survive into a later command:
 
-       GITHUB_TOKEN=$(gh-review-bot-token <owner>/<repo>) gh api \
+       token=$(gh-review-bot-token <owner>/<repo>) || exit $?
+       GITHUB_TOKEN=${token:?} gh api \
          repos/{owner}/{repo}/pulls/<PR>/comments \
          -f body="..." -f commit_id="<head sha>" -f path="..." -F line=N -f side=RIGHT
 
@@ -114,14 +119,29 @@ Repeat until a round comes back clean or you hit the cap:
    whether a comment came from the change or from the critique of it. Separating
    them is the whole reason the app exists.
 
-   `gh-review-bot-token` exits 2 when the app is not installed on the repo. Then
-   fall back to the authenticated account and say so in the summary — a silent
-   fallback looks identical to the app having worked.
-
    Post them even when you intend to fix them immediately. The comment is what
    lets a human see what was caught, judge whether the fix was right, and
    disagree with one applied on their behalf. A fix with no visible cause is a
    commit nobody can review.
+
+   `gh-review-bot-token` exits 1 when it cannot tell, for instance when GitHub
+   is unreachable: stop the round and report it, since guessing either way
+   leaves findings in the wrong place. It exits 2 when the app is not installed
+   on the repo. Then
+   post no review comments under either account: keep the findings in the
+   session and handle them as in step 4, without the thread replies and
+   resolves, since there are no threads. List every finding with its outcome in
+   the summary. Unless `--dry-run`, also record in the PR description every
+   finding you do not fix (one you disagree with, defer as out of scope, leave
+   for the human's decision, or still have open at the round cap), where the
+   human will see it. One you defer or still have open at the cap goes in the
+   "Left for later" list if it meets the working rules' bar for an item there;
+   the `/wait-for-review` handover turns that list into issues. Every other
+   one, including every finding you disagree with or leave for the human's
+   decision, goes in an "Open review findings" list, with your reasoning or
+   its state; nothing turns that list into issues. Take an
+   entry off once a later round fixes it. There is no `bot-review` check to
+   publish either (see the verdict check below).
 
 4. **Address each finding, one commit each.** For each thread:
    - **Fix it** — the smallest change that corrects it, at the reported place
@@ -155,7 +175,9 @@ Repeat until a round comes back clean or you hit the cap:
      arrives. Carry it in the end-of-turn summary too.
 
    Every thread ends either resolved with a commit SHA or open with a reason. A
-   finding you neither fix nor answer is one you have silently dropped.
+   finding you neither fix nor answer is one you have silently dropped. Without
+   the app, the summary and the lists in the description stand in for the
+   threads.
 
 5. **Push** the round's commits, unless `--dry-run`.
 
@@ -179,7 +201,16 @@ The PR carries a `bot-review` check run on its head SHA, published under the
 app token. A head reviewed before the check was renamed carries `claude-review`
 as well; give it the same verdict whenever you write `bot-review`, so no stale
 red check is left beside the new one. It is **red until a review has cleared
-that exact commit**:
+that exact commit**.
+
+Without the app (`gh-review-bot-token` exits 2) only an app can create a check
+run, so publish nothing from this section; the round cap and the rest of it
+still apply. End the summary with the head SHA and the outcome on
+it: a clean full pass, or a stop at the round cap with the counts of findings
+open and pushed back on. `/wait-for-review` takes that line as the verdict for
+that head.
+
+With the app, publish the check as follows:
 
 - **Before round one**, as the very first thing the loop does — publish
   `conclusion=failure`, title **`Review in progress`**, against the current head.
@@ -212,7 +243,8 @@ the passing state is just the absence of a problem.
 
 Publish:
 
-    GITHUB_TOKEN=$(gh-review-bot-token <owner>/<repo>) gh api \
+    token=$(gh-review-bot-token <owner>/<repo>) || exit $?
+    GITHUB_TOKEN=${token:?} gh api \
       repos/{owner}/{repo}/check-runs -X POST \
       -f name=bot-review -f head_sha="<head sha>" \
       -f status=completed -f conclusion=failure \

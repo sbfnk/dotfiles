@@ -56,7 +56,9 @@ as one is found:
    **If this returns a file, the gate is satisfied — go straight to Step 1.**
    This is the normal case: the org half is where the reviewing method lives, and
    it covers every repo the org owns.
-2. **A repo half**, only if the org half 404s — `.github/REVIEW.md`, an
+2. **The sbfnk org half**, only if the owner's 404s — `sbfnk/.github`'s
+   `REVIEW.md`, which `/review-loop` uses as the org half in the same case.
+3. **A repo half**, only if both of those 404 — `.github/REVIEW.md`, an
    `AGENTS.md`/`CLAUDE.md` that names one, or `.claude/commands/review.md`.
 
 **A repo without `.github/REVIEW.md` is the normal case, not a failure.** Most
@@ -64,11 +66,11 @@ repos have no repo half and rely on the org half alone. Never stop on a missing
 repo half without having fetched the org half first, and never treat an open PR
 that would add a repo half as a reason to wait — the gate does not need it.
 
-Stop only when **both** lookups fail. Then stop the whole command immediately: do
-not resolve the watch list, enter the per-PR loop, spawn a reviewer, or schedule
-a wake-up. Report that there is no review spec anywhere, so PRs cannot be driven
-to a verified review, and offer to write the org spec. That is worth stopping for
-because `/review-loop` would publish no `bot-review` check (Step 1b), so the
+Stop only when **all three** lookups fail. Then stop the whole command
+immediately: do not resolve the watch list, enter the per-PR loop, spawn a
+reviewer, or schedule a wake-up. Report that there is no review spec anywhere, so
+PRs cannot be driven to a verified review, and offer to write the org spec. That
+is worth stopping for because `/review-loop` would stop without reviewing, so the
 Step 5 stopping condition could never be met and the loop would reschedule for
 ever without saying why.
 
@@ -114,7 +116,9 @@ Then:
   back on for the human (the title names them). Hand the PR to the human
   (below), then go on to Step 3.
 - **`FAILURE`, title naming open findings** — `/review-loop` stopped at its round
-  cap. Do not re-run it; those findings are inline comments awaiting the human.
+  cap. Do not re-run it; those findings are inline comments awaiting the human
+  (without the review app, entries in the description's "Left for later" and
+  "Open review findings" lists).
   Leave the PR as it is (a draft stays a draft), go on to Step 3, and note in
   the summary that it has not been handed over.
 - **`FAILURE`, title `Not reviewed yet`** — a push landed and nothing has
@@ -124,9 +128,26 @@ Then:
   rather than starting a second one. Otherwise treat it as not reviewed and run
   the loop: a loop that died partway leaves this state behind, and nothing else
   will clear it.
-- **No check on this head** — run `/review-loop <PR>` now, before waiting on
-  anyone. It pushes its own commits, which moves the head; re-read the state
-  afterwards rather than reasoning from what you fetched in Step 1.
+- **No check on this head** — first run `gh-review-bot-token <owner>/<repo>`
+  (discard the token) to learn whether a check can exist at all, then act on
+  its exit status:
+  - **0, the app is installed** — run `/review-loop <PR>` now, before waiting
+    on anyone. It pushes its own commits, which moves the head; re-read the
+    state afterwards rather than reasoning from what you fetched in Step 1.
+  - **2, the app is not installed** — no check will ever appear, so the
+    verdict comes from elsewhere. If `/review-loop` reported a clean full pass
+    on this exact head earlier in this session, treat it as `SUCCESS` and hand
+    the PR over. If it reported a stop at the round cap on this head, treat it
+    as `FAILURE` with open findings, above, and do not run it again. Otherwise
+    run `/review-loop <PR>`. A new session therefore reviews the head once
+    more: nothing on GitHub records a verdict for a particular commit without
+    the app, and a pending review request survives later pushes.
+  - **1, the helper could not tell** — read its message. A network failure or
+    an HTTP 5xx may clear: retry on the next wake-up, for at most three
+    wake-ups in a row on the same head. Anything else (a missing key, an HTTP
+    401 or 403), or a fourth failure in a row, will not clear by waiting: drop
+    the PR from the watch list, schedule no wake-up for it, and report the
+    message in the summary so the human can fix the cause.
 
 **Handing the PR to the human.** A green `bot-review` is the signal that the
 PR is worth sbfnk's time, so PRs are opened as drafts with no reviewer and wait
@@ -236,7 +257,7 @@ Evaluate this **per PR**. A single PR is done when all of these are true:
 
 - `sbfnk` has posted a review (comments from `sbfnk-bot` — this loop's own output — do not count towards this, and neither does anything `/review-loop` produced).
 - If the repo uses CodeRabbit: CodeRabbit has posted a review, OR more than 60 minutes have passed since the PR's head commit was pushed without one (its free tier queues reviews when rate-limited, so a review that hasn't arrived within the hourly window isn't coming). Judge this from the head commit's committer timestamp. When proceeding without CodeRabbit, note it in the summary.
-- The `bot-review` check (or, on an older head without one, `claude-review`) on the current head SHA is `SUCCESS`, or is `FAILURE` with a title naming findings left open at the round cap (Step 1b). `FAILURE` with `Not reviewed yet`, or no check at all, means not done. Never treat this check as CI to fix in Step 3b — it is a review verdict, and it clears by reviewing, not by debugging. On a PR you did not author, treat the condition as not applicable and say so in the summary.
+- The `bot-review` check (or, on an older head without one, `claude-review`) on the current head SHA is `SUCCESS`, or is `FAILURE` with a title naming findings left open at the round cap (Step 1b). `FAILURE` with `Not reviewed yet`, or no check at all, means not done, except where the review app is not installed and Step 1b took this session's verdict on this head, a clean pass or a stop at the round cap, in place of the check. Never treat this check as CI to fix in Step 3b — it is a review verdict, and it clears by reviewing, not by debugging. On a PR you did not author, treat the condition as not applicable and say so in the summary.
 - All unaddressed trusted comments have been addressed, including findings in trusted review bodies (Step 3).
 - No unresolved merge conflict (Step 4).
 - No unaddressable failing checks and no checks still in progress (Step 3b). If checks are still running, keep polling.
