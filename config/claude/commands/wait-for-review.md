@@ -56,10 +56,10 @@ as one is found:
    **If this returns a file, the gate is satisfied — go straight to Step 1.**
    This is the normal case: the org half is where the reviewing method lives, and
    it covers every repo the org owns.
-2. **A repo half**, only if the org half 404s — `.github/REVIEW.md`, an
+2. **The sbfnk org half**, only if the owner's 404s — `sbfnk/.github`'s
+   `REVIEW.md`, which `/review-loop` uses as the org half in the same case.
+3. **A repo half**, only if both of those 404 — `.github/REVIEW.md`, an
    `AGENTS.md`/`CLAUDE.md` that names one, or `.claude/commands/review.md`.
-3. **The sbfnk org half**, only if both of those fail — `sbfnk/.github`'s
-   `REVIEW.md`, which `/review-loop` falls back to in the same case.
 
 **A repo without `.github/REVIEW.md` is the normal case, not a failure.** Most
 repos have no repo half and rely on the org half alone. Never stop on a missing

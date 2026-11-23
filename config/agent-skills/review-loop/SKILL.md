@@ -68,9 +68,10 @@ older repo may still carry a full spec, method and all, in its own
 `.github/REVIEW.md`; that is fine — the org half just repeats what is already
 there.)
 
-**If neither half exists** — the `<owner>/.github` `REVIEW.md` 404s *and*
-none of the three repo locations has one — use `sbfnk/.github`'s `REVIEW.md` as
-the org half and say so in the summary. Only if that also 404s, say so and stop.
+**If the owner has no org half** — the `<owner>/.github` `REVIEW.md` 404s —
+use `sbfnk/.github`'s `REVIEW.md` as the org half, alongside any repo half, and
+say so in the summary. Only if that also 404s and no repo half exists, say so
+and stop.
 A review with no agreed bar at all produces exactly the nit-generation this
 design exists to avoid.
 
