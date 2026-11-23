@@ -10,8 +10,9 @@
 # Usage:
 #   GITHUB_TOKEN=$(gh-review-bot-token <owner>/<repo>) gh api ...
 #
-# Exits 2 if the app is not installed on the repo — callers should fall back
-# to posting as sbfnk-bot.
+# Exits 2 if the app is not installed on the repo. Callers then post no review
+# comments under either account and keep the findings local (see the
+# review-loop skill).
 set -euo pipefail
 
 app_id=4359973
