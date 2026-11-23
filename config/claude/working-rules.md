@@ -79,8 +79,9 @@ CLAUDE.md; the bot has it in every prompt.
   the way, is listed in the description under "Left for later" before the
   PR is marked ready. Most PRs have none. An item is a defect or gap that
   someone using the code would run into, shown by a test, a run or the
-  code itself. Checks that were not run belong in the description's text;
-  guesses and improvements nobody asked for stay off the list. Interactive
+  code itself, or a change sbfnk asked for in a review that the PR leaves
+  out. Checks that were not run belong in the description's text; guesses
+  and improvements nobody asked for stay off the list. Interactive
   sessions also open an issue in the repository for each item, assigned to
   sbfnk-bot (or to sbfnk in sbfnk/sbfnk-bot, whose own code the bot does
   not work on), and link it from the list. The bot writes each item as
