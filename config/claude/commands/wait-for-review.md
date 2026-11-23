@@ -148,12 +148,18 @@ first as in Step 3b; a failure Step 3b leaves in place, out of scope or already
 attempted on this head, does not hold the handover, so hand over anyway and
 name the failing check in the summary):
 
-- Raise whatever the PR or its reviews leave for later (deferred work the
-  description names, threads pushed back on as out of scope) as an issue,
-  except what is left of an issue the PR partly addresses, which stays there,
-  as the working rules say, and link each one under "Left for later" in the
-  PR description. Skip anything that list already links an issue for: the
-  handover runs again on every green head.
+- Raise each problem the PR or its reviews leave for later (deferred work
+  the description names, threads pushed back on as out of scope) as an
+  issue, and link it under "Left for later" in the PR description. Only
+  what the working rules count as an item qualifies: either a defect or
+  gap that someone using the code would run into, shown by a test, a run
+  or the code itself; or a change sbfnk asked for in a review that the PR
+  leaves out. What is left of an issue the PR partly addresses stays
+  there, as the working rules say. An entry already on the list with no
+  issue linked that does not qualify comes off it: a check that was not
+  run moves into the description's text, and anything else is deleted.
+  Skip anything that list already links an issue for: the handover runs
+  again on every green head.
 - If `isDraft` is true, mark it ready: `gh pr ready <PR>`.
 - Request review from sbfnk (`gh pr edit <PR> --add-reviewer sbfnk`) unless
   sbfnk is already in `reviewRequests` or has reviewed the current head commit.
@@ -255,7 +261,8 @@ When stopping, check whether the PR should be auto-merged:
 If both are true:
 
 - On a PR you authored, raise what it leaves for later, as in the Step 1b
-  handover, including findings `/review-loop` left open at its round cap.
+  handover, including findings `/review-loop` left open at its round cap
+  that meet the same bar.
 - If the PR is a draft (`isDraft: true`), mark it ready: `gh pr ready <PR>`.
 - Queue the auto-merge: `gh pr merge <PR> --auto --delete-branch` (no merge-strategy flag — use the repo default).
 - `--auto` waits for required checks to pass before merging, so you don't need to verify CI yourself.
