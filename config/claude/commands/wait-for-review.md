@@ -133,9 +133,10 @@ Then:
   (`gh-review-bot-token <owner>/<repo>` exits 2) — no check will ever appear,
   so the verdict comes from elsewhere. If `/review-loop` reported a clean full
   pass on this exact head earlier in this session, treat it as `SUCCESS` and
-  hand the PR over. If sbfnk is already in `reviewRequests`, an earlier session
-  handed this head over: treat it as `SUCCESS` without reviewing again. Otherwise
-  run `/review-loop <PR>` as above.
+  hand the PR over. Otherwise run `/review-loop <PR>` as above. A new session
+  therefore reviews the head once more: nothing on GitHub records a verdict
+  for a particular commit without the app, and a pending review request
+  survives later pushes.
 
 **Handing the PR to the human.** A green `bot-review` is the signal that the
 PR is worth sbfnk's time, so PRs are opened as drafts with no reviewer and wait
