@@ -125,7 +125,8 @@ Repeat until a round comes back clean or you hit the cap:
    and handle them as in step 4, without the thread replies and resolves, since
    there are no threads. List every finding with its outcome in the summary, and
    add each one you push back on to the PR description's "Left for later" list,
-   where the human and the `/wait-for-review` handover will find it.
+   where the human and the `/wait-for-review` handover will find it. There is no
+   `bot-review` check to publish either (see the verdict check below).
 
 4. **Address each finding, one commit each.** For each thread:
    - **Fix it** — the smallest change that corrects it, at the reported place
@@ -184,7 +185,14 @@ The PR carries a `bot-review` check run on its head SHA, published under the
 app token. A head reviewed before the check was renamed carries `claude-review`
 as well; give it the same verdict whenever you write `bot-review`, so no stale
 red check is left beside the new one. It is **red until a review has cleared
-that exact commit**:
+that exact commit**.
+
+Without the app (`gh-review-bot-token` exits 2) only an app can create a check
+run, so skip this section. End the summary with the head SHA and whether the
+full pass on it came back clean: `/wait-for-review` takes that line as the
+verdict for that head and hands the PR over on it.
+
+With the app, publish the check as follows:
 
 - **Before round one**, as the very first thing the loop does — publish
   `conclusion=failure`, title **`Review in progress`**, against the current head.
