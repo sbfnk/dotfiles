@@ -64,13 +64,21 @@ elif [[ $status != 200 ]]; then
 fi
 installation_id=$(jq -r .id <<<"${lookup%$'\n'*}")
 
-response=$(curl -sf -X POST \
+# The same wording as the lookup above, so callers can tell a network failure
+# or a 5xx, which may clear, from a failure that waiting will not fix.
+minted=$(curl -s -w '\n%{http_code}' -X POST \
   -H "Authorization: Bearer $jwt" \
   -H "Accept: application/vnd.github+json" \
   "https://api.github.com/app/installations/$installation_id/access_tokens") || {
-  echo "could not mint an installation token for $repo" >&2
+  echo "could not reach GitHub to mint an installation token for $repo" >&2
   exit 1
 }
+status=${minted##*$'\n'}
+if [[ $status != 201 ]]; then
+  echo "minting an installation token for $repo failed with HTTP $status" >&2
+  exit 1
+fi
+response=${minted%$'\n'*}
 
 # --permissions reports what the installation actually grants, which is the only
 # way to tell a missing scope from an endpoint the app simply may not call.
