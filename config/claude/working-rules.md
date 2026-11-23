@@ -75,9 +75,9 @@ CLAUDE.md; the bot has it in every prompt.
   closes #N" only when the PR does everything #N asks. Otherwise write
   "This PR partly addresses #N" and say what is left; #N stays open and
   assigned, and the work continues there.
-- A problem a PR leaves for later, from a review or found along the way,
-  is listed in the description under "Left for later" before the PR is
-  marked ready. Most PRs have none. An item is a defect or gap that
+- Any other problem a PR leaves for later, from a review or found along
+  the way, is listed in the description under "Left for later" before the
+  PR is marked ready. Most PRs have none. An item is a defect or gap that
   someone using the code would run into, shown by a test, a run or the
   code itself. Checks that were not run belong in the description's text;
   guesses and improvements nobody asked for stay off the list. Interactive
