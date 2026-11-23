@@ -142,8 +142,10 @@ name the failing check in the summary):
   what the working rules count as an item qualifies: a defect or gap that
   someone using the code would run into, shown by a test, a run or the code
   itself. What is left of an issue the PR partly addresses stays there, as the
-  working rules say. Skip anything that list already links an issue for: the
-  handover runs again on every green head.
+  working rules say. An entry already on the list that does not qualify
+  comes off it: a check that was not run moves into the description's text,
+  and anything else is deleted. Skip anything that list already links an
+  issue for: the handover runs again on every green head.
 - If `isDraft` is true, mark it ready: `gh pr ready <PR>`.
 - Request review from sbfnk (`gh pr edit <PR> --add-reviewer sbfnk`) unless
   sbfnk is already in `reviewRequests` or has reviewed the current head commit.
