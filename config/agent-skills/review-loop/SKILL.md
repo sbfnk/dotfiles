@@ -121,7 +121,10 @@ Repeat until a round comes back clean or you hit the cap:
    disagree with one applied on their behalf. A fix with no visible cause is a
    commit nobody can review.
 
-   `gh-review-bot-token` exits 2 when the app is not installed on the repo. Then
+   `gh-review-bot-token` exits 1 when it cannot tell, for instance when GitHub
+   is unreachable: stop the round and report it, since guessing either way
+   leaves findings in the wrong place. It exits 2 when the app is not installed
+   on the repo. Then
    post no review comments under either account: keep the findings in the
    session and handle them as in step 4, without the thread replies and
    resolves, since there are no threads. List every finding with its outcome in

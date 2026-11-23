@@ -132,7 +132,9 @@ Then:
   anyone. It pushes its own commits, which moves the head; re-read the state
   afterwards rather than reasoning from what you fetched in Step 1.
 - **No check on this head, and the review app is not installed**
-  (`gh-review-bot-token <owner>/<repo>` exits 2) — no check will ever appear,
+  (`gh-review-bot-token <owner>/<repo>` exits 2; an exit of 1 means the lookup
+  failed, so treat it as no answer and retry on the next wake-up) — no check
+  will ever appear,
   so the verdict comes from elsewhere. If `/review-loop` reported a clean full
   pass on this exact head earlier in this session, treat it as `SUCCESS` and
   hand the PR over. If it reported a stop at the round cap on this head, treat

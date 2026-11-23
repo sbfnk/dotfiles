@@ -12,7 +12,7 @@
 #
 # Exits 2 if the app is not installed on the repo. Callers then post no review
 # comments under either account and keep the findings local (see the
-# review-loop skill).
+# review-loop skill). Any other failure exits 1.
 set -euo pipefail
 
 app_id=4359973
@@ -45,13 +45,24 @@ signature=$(printf '%s.%s' "$header" "$payload" |
   openssl dgst -sha256 -sign "$key" -binary | b64url)
 jwt="$header.$payload.$signature"
 
-installation_id=$(curl -sf \
+lookup=$(curl -s -w '\n%{http_code}' \
   -H "Authorization: Bearer $jwt" \
   -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/repos/$repo/installation" | jq -r .id) || {
+  "https://api.github.com/repos/$repo/installation") || {
+  echo "could not reach GitHub to look up the installation on $repo" >&2
+  exit 1
+}
+status=${lookup##*$'\n'}
+# Only a 404 means the app is not installed. Any other failure (a 5xx, or a JWT
+# rejected for clock skew) must not send callers down the no-app path.
+if [[ $status == 404 ]]; then
   echo "sbfnk-review-bot is not installed on $repo" >&2
   exit 2
-}
+elif [[ $status != 200 ]]; then
+  echo "installation lookup on $repo failed with HTTP $status" >&2
+  exit 1
+fi
+installation_id=$(jq -r .id <<<"${lookup%$'\n'*}")
 
 response=$(curl -sf -X POST \
   -H "Authorization: Bearer $jwt" \
