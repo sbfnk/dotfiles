@@ -58,17 +58,19 @@ as one is found:
    it covers every repo the org owns.
 2. **A repo half**, only if the org half 404s — `.github/REVIEW.md`, an
    `AGENTS.md`/`CLAUDE.md` that names one, or `.claude/commands/review.md`.
+3. **The sbfnk org half**, only if both of those fail — `sbfnk/.github`'s
+   `REVIEW.md`, which `/review-loop` falls back to in the same case.
 
 **A repo without `.github/REVIEW.md` is the normal case, not a failure.** Most
 repos have no repo half and rely on the org half alone. Never stop on a missing
 repo half without having fetched the org half first, and never treat an open PR
 that would add a repo half as a reason to wait — the gate does not need it.
 
-Stop only when **both** lookups fail. Then stop the whole command immediately: do
-not resolve the watch list, enter the per-PR loop, spawn a reviewer, or schedule
-a wake-up. Report that there is no review spec anywhere, so PRs cannot be driven
-to a verified review, and offer to write the org spec. That is worth stopping for
-because `/review-loop` would publish no `bot-review` check (Step 1b), so the
+Stop only when **all three** lookups fail. Then stop the whole command
+immediately: do not resolve the watch list, enter the per-PR loop, spawn a
+reviewer, or schedule a wake-up. Report that there is no review spec anywhere, so
+PRs cannot be driven to a verified review, and offer to write the org spec. That
+is worth stopping for because `/review-loop` would stop without reviewing, so the
 Step 5 stopping condition could never be met and the loop would reschedule for
 ever without saying why.
 
