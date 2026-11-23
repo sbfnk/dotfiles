@@ -124,13 +124,15 @@ Repeat until a round comes back clean or you hit the cap:
    post no review comments under either account: keep the findings in the
    session and handle them as in step 4, without the thread replies and
    resolves, since there are no threads. List every finding with its outcome in
-   the summary. Unless `--dry-run`, also record in the PR description the
-   findings you push back on, where the human will see them: one you defer as
-   out of scope goes in the "Left for later" list, which the `/wait-for-review`
-   handover turns into issues; one you disagree with goes in a separate "Pushed
-   back in review" list with your reasoning, which nothing turns into an issue.
-   There is no `bot-review` check to publish either (see the verdict check
-   below).
+   the summary. Unless `--dry-run`, also keep an "Open review findings" list in
+   the PR description, where the human will see it, for every finding you do
+   not fix: one you disagree with, one that needs the human's decision, and one
+   still open when you stop at the round cap, each with your reasoning or its
+   state. Nothing turns this list into issues. A finding you defer as out of
+   scope goes in the "Left for later" list instead, where the
+   `/wait-for-review` handover decides whether it becomes an issue. Take an
+   entry off once a later round fixes it. There is no `bot-review` check to
+   publish either (see the verdict check below).
 
 4. **Address each finding, one commit each.** For each thread:
    - **Fix it** — the smallest change that corrects it, at the reported place
@@ -165,7 +167,7 @@ Repeat until a round comes back clean or you hit the cap:
 
    Every thread ends either resolved with a commit SHA or open with a reason. A
    finding you neither fix nor answer is one you have silently dropped. Without
-   the app, the summary and the two lists in the description stand in for the
+   the app, the summary and the lists in the description stand in for the
    threads.
 
 5. **Push** the round's commits, unless `--dry-run`.
