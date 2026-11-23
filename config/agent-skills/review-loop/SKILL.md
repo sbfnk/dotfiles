@@ -127,10 +127,12 @@ Repeat until a round comes back clean or you hit the cap:
    the summary. Unless `--dry-run`, also record in the PR description every
    finding you do not fix (one you disagree with, defer as out of scope, leave
    for the human's decision, or still have open at the round cap), where the
-   human will see it. One that meets the working rules' bar for a "Left for
-   later" item goes in that list, which the `/wait-for-review` handover turns
-   into issues. Every other one goes in an "Open review findings" list, with
-   your reasoning or its state; nothing turns that list into issues. Take an
+   human will see it. One you defer or still have open at the cap goes in the
+   "Left for later" list if it meets the working rules' bar for an item there;
+   the `/wait-for-review` handover turns that list into issues. Every other
+   one, including every finding you disagree with or leave for the human's
+   decision, goes in an "Open review findings" list, with your reasoning or
+   its state; nothing turns that list into issues. Take an
    entry off once a later round fixes it. There is no `bot-review` check to
    publish either (see the verdict check below).
 
