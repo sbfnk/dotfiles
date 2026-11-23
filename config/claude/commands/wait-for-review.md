@@ -128,26 +128,26 @@ Then:
   rather than starting a second one. Otherwise treat it as not reviewed and run
   the loop: a loop that died partway leaves this state behind, and nothing else
   will clear it.
-- **No check on this head** — run `/review-loop <PR>` now, before waiting on
-  anyone. It pushes its own commits, which moves the head; re-read the state
-  afterwards rather than reasoning from what you fetched in Step 1.
-- **No check on this head, and the review app is not installed**
-  (`gh-review-bot-token <owner>/<repo>` exits 2) — no check will ever appear,
-  so the verdict comes from elsewhere. If `/review-loop` reported a clean full
-  pass on this exact head earlier in this session, treat it as `SUCCESS` and
-  hand the PR over. If it reported a stop at the round cap on this head, treat
-  it as `FAILURE` with open findings, above, and do not run it again. Otherwise
-  run `/review-loop <PR>` as above. A new session
-  therefore reviews the head once more: nothing on GitHub records a verdict
-  for a particular commit without the app, and a pending review request
-  survives later pushes.
-- **No check on this head, and `gh-review-bot-token` exits 1** — it could not
-  tell whether the app is installed. Read its message. A network failure or an
-  HTTP 5xx may clear: retry on the next wake-up, for at most three wake-ups in
-  a row on the same head. Anything else (a missing key, an HTTP 401 or 403),
-  or a fourth failure in a row, will not clear by waiting: drop the PR from
-  the watch list, schedule no wake-up for it, and report the message in the
-  summary so the human can fix the cause.
+- **No check on this head** — first run `gh-review-bot-token <owner>/<repo>`
+  (discard the token) to learn whether a check can exist at all, then act on
+  its exit status:
+  - **0, the app is installed** — run `/review-loop <PR>` now, before waiting
+    on anyone. It pushes its own commits, which moves the head; re-read the
+    state afterwards rather than reasoning from what you fetched in Step 1.
+  - **2, the app is not installed** — no check will ever appear, so the
+    verdict comes from elsewhere. If `/review-loop` reported a clean full pass
+    on this exact head earlier in this session, treat it as `SUCCESS` and hand
+    the PR over. If it reported a stop at the round cap on this head, treat it
+    as `FAILURE` with open findings, above, and do not run it again. Otherwise
+    run `/review-loop <PR>`. A new session therefore reviews the head once
+    more: nothing on GitHub records a verdict for a particular commit without
+    the app, and a pending review request survives later pushes.
+  - **1, the helper could not tell** — read its message. A network failure or
+    an HTTP 5xx may clear: retry on the next wake-up, for at most three
+    wake-ups in a row on the same head. Anything else (a missing key, an HTTP
+    401 or 403), or a fourth failure in a row, will not clear by waiting: drop
+    the PR from the watch list, schedule no wake-up for it, and report the
+    message in the summary so the human can fix the cause.
 
 **Handing the PR to the human.** A green `bot-review` is the signal that the
 PR is worth sbfnk's time, so PRs are opened as drafts with no reviewer and wait
