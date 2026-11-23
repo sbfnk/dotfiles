@@ -124,13 +124,13 @@ Repeat until a round comes back clean or you hit the cap:
    post no review comments under either account: keep the findings in the
    session and handle them as in step 4, without the thread replies and
    resolves, since there are no threads. List every finding with its outcome in
-   the summary. Unless `--dry-run`, also keep an "Open review findings" list in
-   the PR description, where the human will see it, for every finding you do
-   not fix: one you disagree with, one that needs the human's decision, and one
-   still open when you stop at the round cap, each with your reasoning or its
-   state. Nothing turns this list into issues. A finding you defer as out of
-   scope goes in the "Left for later" list instead, where the
-   `/wait-for-review` handover decides whether it becomes an issue. Take an
+   the summary. Unless `--dry-run`, also record in the PR description every
+   finding you do not fix (one you disagree with, defer as out of scope, leave
+   for the human's decision, or still have open at the round cap), where the
+   human will see it. One that meets the working rules' bar for a "Left for
+   later" item goes in that list, which the `/wait-for-review` handover turns
+   into issues. Every other one goes in an "Open review findings" list, with
+   your reasoning or its state; nothing turns that list into issues. Take an
    entry off once a later round fixes it. There is no `bot-review` check to
    publish either (see the verdict check below).
 

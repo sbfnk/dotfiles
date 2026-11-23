@@ -117,8 +117,8 @@ Then:
   (below), then go on to Step 3.
 - **`FAILURE`, title naming open findings** — `/review-loop` stopped at its round
   cap. Do not re-run it; those findings are inline comments awaiting the human
-  (without the review app, entries in the description's "Open review findings"
-  list).
+  (without the review app, entries in the description's "Left for later" and
+  "Open review findings" lists).
   Leave the PR as it is (a draft stays a draft), go on to Step 3, and note in
   the summary that it has not been handed over.
 - **`FAILURE`, title `Not reviewed yet`** — a push landed and nothing has
