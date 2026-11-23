@@ -197,7 +197,8 @@ red check is left beside the new one. It is **red until a review has cleared
 that exact commit**.
 
 Without the app (`gh-review-bot-token` exits 2) only an app can create a check
-run, so skip this section. End the summary with the head SHA and the outcome on
+run, so publish nothing from this section; the round cap and the rest of it
+still apply. End the summary with the head SHA and the outcome on
 it: a clean full pass, or a stop at the round cap with the counts of findings
 open and pushed back on. `/wait-for-review` takes that line as the verdict for
 that head.
