@@ -19,7 +19,8 @@
 #   gh-publish-review-check <owner>/<repo> <sha> clean
 #   gh-publish-review-check <owner>/<repo> <sha> findings <count>
 #
-# Exits 2 if the app is not installed on the repo, 3 if it lacks Checks: write,
+# Exits 2 if the app is not installed on the repo, 1 if the token could not be
+# minted or another call failed, 3 if it lacks Checks: write,
 # 5 if another app already owns the check on that SHA.
 set -euo pipefail
 
@@ -58,7 +59,7 @@ case $verdict in
     ;;
 esac
 
-token=$(gh-review-bot-token "$repo") || exit 2
+token=$(gh-review-bot-token "$repo") || exit $?
 export GITHUB_TOKEN=$token
 
 # A failed lookup still prints a JSON error body, which --jq happily passes
