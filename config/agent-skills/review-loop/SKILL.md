@@ -115,16 +115,17 @@ Repeat until a round comes back clean or you hit the cap:
    whether a comment came from the change or from the critique of it. Separating
    them is the whole reason the app exists.
 
-   `gh-review-bot-token` exits 2 when the app is not installed on the repo. Then
-   post nothing: keep the findings in the session, fix or push back on them
-   locally, push only the fix commits, and list every finding with its outcome
-   in the summary. There is no `bot-review` check either, so a clean full pass
-   is what hands the PR to the human.
-
    Post them even when you intend to fix them immediately. The comment is what
    lets a human see what was caught, judge whether the fix was right, and
    disagree with one applied on their behalf. A fix with no visible cause is a
    commit nobody can review.
+
+   `gh-review-bot-token` exits 2 when the app is not installed on the repo. Then
+   post nothing, on GitHub or as `sbfnk-bot`: keep the findings in the session
+   and handle them as in step 4, without the thread replies and resolves, since
+   there are no threads. List every finding with its outcome in the summary, and
+   add each one you push back on to the PR description's "Left for later" list,
+   where the human and the `/wait-for-review` handover will find it.
 
 4. **Address each finding, one commit each.** For each thread:
    - **Fix it** — the smallest change that corrects it, at the reported place
@@ -158,7 +159,8 @@ Repeat until a round comes back clean or you hit the cap:
      arrives. Carry it in the end-of-turn summary too.
 
    Every thread ends either resolved with a commit SHA or open with a reason. A
-   finding you neither fix nor answer is one you have silently dropped.
+   finding you neither fix nor answer is one you have silently dropped. Without
+   the app, the summary and the "Left for later" list stand in for the threads.
 
 5. **Push** the round's commits, unless `--dry-run`.
 
