@@ -36,16 +36,52 @@ func run(_ args: [String]) -> [String] {
 // whichever workspace holds a Finder window.
 let ignoredBundleIDs: Set = ["com.apple.finder"]
 
+func isFrontmost(_ app: NSRunningApplication) -> Bool {
+  NSWorkspace.shared.frontmostApplication?.processIdentifier
+    == app.processIdentifier
+}
+
+// The app's frontmost window, from the window server's front-to-back list.
+// Reading IDs, owners and layers needs no permission, unlike asking the
+// accessibility API for the key window. App-modal panels (alerts, Open/Save
+// panels run modally) sit at the modal-panel level rather than with normal
+// windows, so both levels count.
+let windowLayers = [0, Int(CGWindowLevelForKey(.modalPanelWindow))]
+
+func frontWindowID(of pid: pid_t) -> Int? {
+  guard let info = CGWindowListCopyWindowInfo(
+    [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
+    as? [[String: Any]]
+  else { return nil }
+  return info.first {
+    ($0[kCGWindowOwnerPID as String] as? pid_t) == pid
+      && windowLayers.contains($0[kCGWindowLayer as String] as? Int ?? -1)
+  }?[kCGWindowNumber as String] as? Int
+}
+
 func followIfStranded(_ app: NSRunningApplication) {
-  guard NSWorkspace.shared.frontmostApplication?.processIdentifier
-    == app.processIdentifier,
-    !ignoredBundleIDs.contains(app.bundleIdentifier ?? "")
+  guard isFrontmost(app),
+    !ignoredBundleIDs.contains(app.bundleIdentifier ?? ""),
+    let front = frontWindowID(of: app.processIdentifier)
   else { return }
 
-  let appWorkspaces = Set(run([
+  var appWorkspaces = Set<String>()
+  var tracked = Set<Int>()
+  for line in run([
     "list-windows", "--monitor", "all", "--pid", String(app.processIdentifier),
-    "--format", "%{workspace}",
-  ]))
+    "--format", "%{window-id} %{workspace}",
+  ]) {
+    let fields = line.split(separator: " ", maxSplits: 1).map(String.init)
+    guard fields.count == 2, let id = Int(fields[0]) else { continue }
+    tracked.insert(id)
+    appWorkspaces.insert(fields[1])
+  }
+
+  // When the app's front window is one AeroSpace tracks, AeroSpace does its
+  // own following; switching here as well fights it and bounces focus back
+  // to the previous app. Act only when an untracked dialog is in front.
+  guard !tracked.contains(front) else { return }
+
   let visible = Set(run(["list-workspaces", "--monitor", "all", "--visible"]))
 
   // Leave alone apps with no tracked windows (menu bar apps, launchers), apps
@@ -53,7 +89,9 @@ func followIfStranded(_ app: NSRunningApplication) {
   // workspaces, where there is no single right answer.
   guard appWorkspaces.count == 1, !visible.isEmpty,
     appWorkspaces.isDisjoint(with: visible),
-    let target = appWorkspaces.first
+    let target = appWorkspaces.first,
+    // A cmd-tab during the checks above has moved on; do not pull it back.
+    isFrontmost(app)
   else { return }
 
   FileHandle.standardError.write(
