@@ -41,9 +41,13 @@ func isFrontmost(_ app: NSRunningApplication) -> Bool {
     == app.processIdentifier
 }
 
-// The app's frontmost normal-layer window, from the window server's
-// front-to-back list. Reading IDs, owners and layers needs no permission,
-// unlike asking the accessibility API for the key window.
+// The app's frontmost window, from the window server's front-to-back list.
+// Reading IDs, owners and layers needs no permission, unlike asking the
+// accessibility API for the key window. App-modal panels (alerts, Open/Save
+// panels run modally) sit at the modal-panel level rather than with normal
+// windows, so both levels count.
+let windowLayers = [0, Int(CGWindowLevelForKey(.modalPanelWindow))]
+
 func frontWindowID(of pid: pid_t) -> Int? {
   guard let info = CGWindowListCopyWindowInfo(
     [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
@@ -51,7 +55,7 @@ func frontWindowID(of pid: pid_t) -> Int? {
   else { return nil }
   return info.first {
     ($0[kCGWindowOwnerPID as String] as? pid_t) == pid
-      && ($0[kCGWindowLayer as String] as? Int) == 0
+      && windowLayers.contains($0[kCGWindowLayer as String] as? Int ?? -1)
   }?[kCGWindowNumber as String] as? Int
 }
 
