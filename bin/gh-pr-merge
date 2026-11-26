@@ -8,6 +8,10 @@
 # (--auto) that is left to the repository's "Automatically delete head
 # branches" setting.
 #
+# Merging another PR into the same base (two quick merges from gh-dash, say)
+# leaves GitHub's mergeability stale for a few seconds, and it refuses with
+# "Base branch was modified" until it has recomputed, so that error is retried.
+#
 # Usage: gh-pr-merge OWNER/REPO NUMBER [GH PR MERGE FLAGS...]
 set -euo pipefail
 
@@ -25,8 +29,18 @@ queue="$(gh api graphql \
   }' \
   -q .data.repository.pullRequest.isMergeQueueEnabled)"
 
-if [ "$queue" = true ]; then
-  exec gh pr merge -R "$repo" "$number" "$@"
-else
-  exec gh pr merge --delete-branch -R "$repo" "$number" "$@"
-fi
+flags=()
+[ "$queue" = true ] || flags=(--delete-branch)
+
+for attempt in 1 2 3 4 5 6; do
+  if out="$(gh pr merge ${flags[0]+"${flags[@]}"} -R "$repo" "$number" "$@" 2>&1)"; then
+    [ -z "$out" ] || printf '%s\n' "$out"
+    exit 0
+  fi
+  case "$out" in
+    *"Base branch was modified"*) [ "$attempt" -lt 6 ] && sleep 5 ;;
+    *) break ;;
+  esac
+done
+printf '%s\n' "$out" >&2
+exit 1
